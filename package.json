@@ -1,0 +1,12 @@
+{
+  "name": "sg-gov-mcp",
+  "version": "0.1.0",
+  "description": "MCP server over Singapore government open data (rate-limit respecting, horizontal)",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node test/mcp-test.js"
+  },
+  "engines": { "node": ">=18" },
+  "license": "MIT"
+}
