@@ -1,13 +1,17 @@
 # Rate limits: discovered and documented
 
-Method note: "documented" = official docs; "measured" = gentle live probing on
-2026-11-20 ~00:33-00:36 SGT (small request counts, immediate stop on first
-429, full window waited before any retry). We never probed harder than the
-documented limit.
+Method: official documentation first, then small functional checks that stay
+within documented quotas. Never intentionally cause HTTP 429.
+
+Correction, iteration 2 (2026-11-20): the initial boundary measurement below
+made a seventh request against a documented 6/10s cap. That exceeded the
+published limit and should not have been described as compliant. It is kept
+as historical evidence, not a method to repeat. The boundary-probing script
+has been removed. All iteration-2 live checks were within documented limits.
 
 ## data.gov.sg platform (api-open.data.gov.sg)
 
-Documented (guide.data.gov.sg/developer-guide/api-overview/api-rate-limits),
+Documented: https://guide.data.gov.sg/developer-guide/api-overview/api-rate-limits,
 window resets every 10 seconds:
 
 | API family | Keyless | Dev key | Prod key |
@@ -61,21 +65,63 @@ optional `?date=` filter, all return `code: 0` on success.
   published. 500 records per call; `$skip` pagination.
 - Plan: conservative self-imposed per-minute caps per endpoint regardless.
 
+## Dataset APIs: iteration-2 checks (2026-11-20, about 09:02 SGT)
+
+Official docs:
+- https://guide.data.gov.sg/developer-guide/dataset-apis/search-and-filter-within-dataset
+- https://guide.data.gov.sg/developer-guide/dataset-apis/list-all-datasets
+- https://guide.data.gov.sg/developer-guide/dataset-apis/get-dataset-metadata
+- https://guide.data.gov.sg/developer-guide/dataset-apis/list-rows-of-dataset
+
+Live outcomes:
+- `https://data.gov.sg/api/action/datastore_search` returned 200 with HDB
+  data. Verified exact filters, fields, sort, offset and limit=2.
+- `limit=0` returned 200 with a headers-only object, not dataset fields.
+  Schema tool therefore requests one row and discards the row content.
+- Projected queries returned `fields` entries as empty objects; use the
+  unprojected schema tool to inspect column names and types.
+- Documented `api-production.data.gov.sg` catalogue and metadata routes
+  returned 403 on one request each. Stopped; no alternate-host bypass.
+  Tools for those routes remain unimplemented.
+- Dataset requests share **3/10s** per process, below the documented **4/10s**.
+  No boundary/429 probing was performed in this iteration.
+
 ## OneMap (SLA)
 
 - Most APIs now require token auth (RS256 JWT, 3-day validity, renewable via
-  `/api/public/postloginrenew` flow after email signup).
+  the current `/api/auth/post/getToken` flow after email signup).
 - Official OneMap MCP gateway exists (hosted by SLA on AWS Bedrock AgentCore):
   24h access token, 30d refresh token, **5 requests/second per token, burst
   10, 429 + exponential backoff recommended**.
-- Workshop material mentions onboarded Search API users capped at "250"
-  calls; the window (minute/day) is not stated publicly. Unresolved.
+- Sources: https://www.onemap.gov.sg/apidocs/authentication and
+  https://www.onemap.gov.sg/apidocs/mcp/ (read 2026-11-20).
+- Signup confirmation states 300 calls/minute for regular APIs. This is an
+  email claim, not an independently measured quota. Although 300/min and
+  5/sec have equal averages, they do NOT establish interchangeable burst
+  rules, quota scope or token systems. Never combine them.
+- The older `/api/public/postloginrenew` reference in iteration 1 is stale
+  relative to the current authentication docs. Token renewal is not yet
+  implemented or tested in this server.
 
-## API key signups needed (owner decision)
+## Signup state (2026-11-20)
 
-1. data.gov.sg Developer key - email OTP signup on data.gov.sg.
-2. LTA DataMall AccountKey - email signup on datamall.lta.gov.sg.
-3. OneMap account - email signup on onemap.gov.sg.
+- data.gov.sg developer key created and stored securely. Programmatic use
+  still awaits owner approval; keyed-tier limits are documented, not measured.
+- OneMap account created, one authenticated theme-list call succeeded during
+  signup. Three-day REST token is not used by this server yet.
+- LTA DataMall form not submitted: permission for a required contact number
+  remains pending. No AccountKey has been obtained.
 
-None obtained yet. Keys will be stored in the credential vault, never in this
-repo, Slack, or chat.
+Secrets are never stored in this repository or posted to Slack.
+
+## Enforcement scope
+
+In iteration 2, a 429 pauses its entire quota group. Retry-After seconds and
+HTTP-date forms are honored, with a minimum wait of 10.5s. At most one retry.
+Long Retry-After values return an error early but leave the group paused.
+403s are terminal. Concurrent identical requests share a fetch. All of these
+paths are tested offline, not by provoking live errors.
+
+Buckets are per process. Shared egress, multiple processes, other clients or
+future replicas need coordinated budgets or a shared limiter. The prototype
+cannot ensure the aggregate behavior of unrelated clients.

@@ -2,7 +2,8 @@
 
 // Catalog of Singapore government open-data sources exposed by this server.
 //
-// Two upstream families in iteration 1:
+// Real-time registry. General tabular tools live in datasets.js.
+// Two real-time upstream families:
 //  - data.gov.sg v2 real-time APIs (api-open.data.gov.sg), keyless tier:
 //    6 requests / 10 s, measured live. We cap at 5/10s for headroom.
 //  - Legacy api.data.gov.sg v1, keyless, no documented limit found and none

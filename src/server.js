@@ -5,15 +5,18 @@
 // open data. JSON-RPC 2.0, one message per line on stdin/stdout.
 // Diagnostics go to stderr only. Rate limits are always obeyed: see
 // docs/RATE-LIMITS.md. We never parallel-burst, never retry-storm, and on a
-// 429 we wait out the full 10-second window exactly once, then give up.
+// 429 we pause the quota group, honor Retry-After and retry at most once.
 
 const readline = require("readline");
-const { bucketFor, allStats } = require("./ratelimit");
+const { allStats } = require("./ratelimit");
 const { SOURCES, listSources } = require("./sources");
 
-const VERSION = "0.1.0";
+const { createClient } = require("./client");
+const { DATASET_TOOLS, DATASET_SOURCE, buildDatasetRequest, datasetOutput } = require("./datasets");
+const client = createClient();
+const VERSION = "0.2.0";
 const MAX_BODY_CHARS = 12000;
-const cache = new Map(); // url -> { at, ttlMs, body }
+
 
 function log(...a) {
   process.stderr.write(`[sg-gov-mcp] ${a.join(" ")}\n`);
@@ -23,61 +26,16 @@ async function fetchSource(id, args = {}) {
   const src = SOURCES[id];
   if (!src) throw new Error(`unknown source: ${id}`);
 
+  if (!args || typeof args !== 'object' || Array.isArray(args)) throw new Error('arguments must be an object');
+  if (Object.keys(args).some(k => k !== 'date')) throw new Error('unknown argument');
+  if (args.date !== undefined && (typeof args.date !== 'string' || !/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2})?$/.test(args.date))) throw new Error('invalid date format');
   let url = src.url;
   if (args.date && src.dateParam) {
     url += (url.includes("?") ? "&" : "?") + "date=" + encodeURIComponent(args.date);
   }
 
-  const hit = cache.get(url);
-  if (hit && Date.now() - hit.at < hit.ttlMs) {
-    return { body: hit.body, cached: true, url, src };
-  }
-
-  const bucket = bucketFor(src.host, src.bucket);
-  let lastErr = null;
-
-  for (let attempt = 0; attempt < 2; attempt++) {
-    await bucket.acquire();
-    const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 15000);
-    try {
-      const res = await fetch(url, {
-        signal: ctrl.signal,
-        headers: {
-          accept: "application/json",
-          "user-agent": `sg-gov-mcp/${VERSION} (+https://github.com/azjhf-dev/sg-gov-mcp)`,
-        },
-      });
-      clearTimeout(timer);
-
-      if (res.status === 429) {
-        // Upstream says: try again in 10 seconds. Obey the full window, once.
-        log(`429 from ${url}; waiting out the 10s window before one retry`);
-        await new Promise((r) => setTimeout(r, 10500));
-        lastErr = new Error(
-          "upstream rate limit (429); waited 10s and retried once, still limited"
-        );
-        continue;
-      }
-      if (!res.ok) throw new Error(`upstream HTTP ${res.status}`);
-
-      const body = await res.json();
-      if (body && body.code !== undefined && body.code !== 0) {
-        throw new Error(`upstream error code ${body.code}: ${body.errorMsg || "no message"}`);
-      }
-      cache.set(url, { at: Date.now(), ttlMs: src.ttlMs, body });
-      return { body, cached: false, url, src };
-    } catch (e) {
-      clearTimeout(timer);
-      if (e.name === "AbortError") {
-        lastErr = new Error("upstream request timed out after 15s");
-      } else {
-        lastErr = e;
-      }
-      break;
-    }
-  }
-  throw lastErr || new Error("fetch failed");
+  const result = await client.request(src, url);
+  return { ...result, url, src };
 }
 
 function toolDefs() {
@@ -101,6 +59,7 @@ function toolDefs() {
     },
   }));
 
+  defs.push(...DATASET_TOOLS);
   defs.push({
     name: "sg_list_sources",
     description: "List every Singapore government data source this server exposes, with agency, endpoint, update cadence, cache TTL and the client-side rate bucket.",
@@ -116,18 +75,23 @@ function toolDefs() {
 
 async function callTool(name, args) {
   if (name === "sg_list_sources") {
-    return JSON.stringify(listSources(), null, 2);
+    return JSON.stringify([...listSources(), { tools: DATASET_TOOLS.map(t => t.name), endpoint: DATASET_SOURCE.url, client_rate_bucket: "3 req / 10s shared datastore group", cache_ttl_seconds: 300 }], null, 2);
   }
   if (name === "sg_rate_limit_status") {
     const out = {
       buckets: allStats(),
-      cache_entries: cache.size,
+      cache_entries: client.cacheSize(),
       policy:
-        "Conservative client-side caps below documented upstream limits. On 429: wait the full 10s window, retry once, then fail. Never work around limits.",
+        "Per-process conservative quota groups. On 429: shared cooldown, honor Retry-After (at least 10.5s), retry at most once. Long waits fail early with cooldown retained. Never work around limits.",
     };
     return JSON.stringify(out, null, 2);
   }
 
+  if (DATASET_TOOLS.some(t => t.name === name)) {
+    const request = buildDatasetRequest(name, args);
+    const { body, cached } = await client.request(request.src, request.url);
+    return JSON.stringify({ source: request.url, cached, ...datasetOutput(body, request) });
+  }
   const { body, cached, url, src } = await fetchSource(name, args || {});
   let text = JSON.stringify(body);
   let truncated = false;

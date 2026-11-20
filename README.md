@@ -1,33 +1,34 @@
 # sg-gov-mcp
 
-An MCP (Model Context Protocol) server over **Singapore government open data**.
-One server, many agencies behind a uniform tool interface: NEA weather and
-environment readings, taxi and carpark availability now, LTA transport,
-OneMap geocoding, and dataset search in later phases.
+A dependency-free Node MCP stdio server for Singapore government open data.
+One interface across agencies. No API keys are needed for the implemented tools.
 
-Idea: following the "sell the MCP layer, not the agent" argument, the durable
-asset is a reliable, rate-limit-respecting MCP server over valuable public
-data. This repo is the long-term horizontal build: plan in `docs/PLAN.md`,
-measured rate-limit evidence in `docs/RATE-LIMITS.md`.
+## Status: iteration 2 (2026-11-20)
 
-## Status: iteration 1 (2026-11-20)
+16 tools: 12 real-time feeds, 2 general tabular dataset tools, 2 diagnostics.
+The server is a prototype, not a hosted or production-hardened service.
 
-- 12 live tools over two keyless API families (data.gov.sg v2 real-time,
-  legacy api.data.gov.sg v1), plus 2 meta tools (`sg_list_sources`,
-  `sg_rate_limit_status`).
-- Dependency-free Node (>= 18, uses built-in `fetch`). Stdio transport.
-- Rate limits are **always obeyed**: conservative client-side buckets below
-  documented limits, caching, and a single 10-second back-off on 429. No
-  workarounds, ever.
+- Conservative sliding-window quota groups, below documented limits.
+- Shared cooldown on HTTP 429. Honor `Retry-After`, with a 10.5-second minimum.
+  Retry at most once. A wait longer than one minute fails early but keeps the
+  cooldown, rather than occupying the call indefinitely.
+- Cache bounded at 256 entries. Concurrent identical fetches share one request.
+- No boundary probing, quota bypasses, proxy rotation or automatic page crawling.
+- 28 offline tests and 9 live MCP smoke checks pass on 2026-11-20.
 
-## Run
+## Run and test
 
-No install step, no dependencies:
+Requires Node 18 or newer, no install step or packages:
 
 ```bash
-node src/server.js        # speaks MCP over stdio
-node test/mcp-test.js     # handshake + live smoke test (2 upstream calls)
+node src/server.js          # MCP JSON-RPC over stdin/stdout
+npm test                    # offline fixtures, fake clocks, fake HTTP, stdio
+npm run test:live            # four upstream calls, plus cached/diagnostic checks
 ```
+
+Run just one live test process at a time, with at least 10 seconds between
+runs. Limits apply to all clients sharing an upstream quota, not just this app.
+Do not run quota-discovery requests designed to exceed documented limits.
 
 Claude Code:
 
@@ -35,50 +36,78 @@ Claude Code:
 claude mcp add sg-gov -- node /path/to/sg-gov-mcp/src/server.js
 ```
 
-Claude Desktop config:
+Desktop config:
 
 ```json
-{ "mcpServers": { "sg-gov": { "command": "node", "args": ["/path/to/sg-gov-mcp/src/server.js"] } } }
+{"mcpServers":{"sg-gov":{"command":"node","args":["/path/to/sg-gov-mcp/src/server.js"]}}}
 ```
 
 ## Tools
 
-| Tool | Agency | Data |
-|---|---|---|
-| sg_pm25 | NEA | PM2.5 by region, hourly |
-| sg_psi | NEA | PSI + sub-indices by region, hourly |
-| sg_uv_index | NEA | UV index |
-| sg_weather_forecast_2hr | NEA | 2h forecast by area |
-| sg_weather_forecast_24hr | NEA | 24h island-wide forecast |
-| sg_air_temperature | NEA | Per-station air temperature |
-| sg_rainfall | NEA | Per-station rainfall |
-| sg_relative_humidity | NEA | Per-station humidity |
-| sg_wind_direction | NEA | Per-station wind direction |
-| sg_wind_speed | NEA | Per-station wind speed |
-| sg_taxi_availability | LTA (legacy v1) | Available taxi locations (GeoJSON) |
-| sg_carpark_availability | HDB/URA/LTA (legacy v1) | Carpark lot availability |
+| Tool | Data |
+|---|---|
+| sg_pm25 | NEA PM2.5 by region |
+| sg_psi | NEA PSI and sub-indices |
+| sg_uv_index | NEA UV index |
+| sg_weather_forecast_2hr | NEA forecast by area |
+| sg_weather_forecast_24hr | NEA island-wide forecast |
+| sg_air_temperature | Weather-station temperature |
+| sg_rainfall | Station rainfall |
+| sg_relative_humidity | Station humidity |
+| sg_wind_direction | Station wind direction |
+| sg_wind_speed | Station wind speed |
+| sg_taxi_availability | Available taxis, legacy LTA feed |
+| sg_carpark_availability | Available carpark lots, legacy feed |
+| sg_dataset_schema | Tabular column names/types and total rows |
+| sg_dataset_rows | Tabular rows with exact filters, projection and sorting |
+| sg_list_sources | Implemented source registry |
+| sg_rate_limit_status | Per-process quota groups, cooldown and cache count |
 
-All real-time tools accept an optional `date` (`YYYY-MM-DD` or
-`YYYY-MM-DDTHH:mm:ss`, SGT) where the upstream API supports it.
+Real-time tools accept an optional SGT `date` string where supported by the
+upstream. Dataset tools require a `dataset_id` copied from a dataset page.
+They do not find dataset IDs or promise every catalogue format is queryable.
 
-## Rate-limit policy
+### Example: HDB resale transactions
 
-1. Client-side token buckets sit **below** documented upstream limits
-   (5 req/10s where the documented keyless limit is 6/10s).
-2. Responses are cached for their natural update cadence, so most calls never
-   hit the upstream at all.
-3. On HTTP 429 we wait the full 10-second window **once**, retry **once**,
-   then return an error. No header tricks, no IP rotation, no parallel
-   bursting, no workarounds of any kind.
-4. `sg_rate_limit_status` exposes bucket usage so compliance is inspectable.
+Verified source: https://data.gov.sg/datasets/d_8b84c4ee58e3cfc0ece0d773c8ca6abc/view
 
-## Honest caveats
+1. Call `sg_dataset_schema`:
 
-- We are on the **keyless tier**. data.gov.sg offers 2x-5x higher limits with
-  a free API key (signup requires an email OTP; see docs/PLAN.md phase 2).
-- The legacy api.data.gov.sg v1 endpoints are the older generation; data.gov.sg
-  is migrating traffic to the new platform, so taxi/carpark may move.
-- SLA already runs an official OneMap MCP gateway (account required). We link
-  to it rather than duplicate it; see docs/PLAN.md phase 4.
-- Rate-limit numbers in docs/RATE-LIMITS.md mix official documentation with
-  our own gentle live measurements; each row says which.
+```json
+{"dataset_id":"d_8b84c4ee58e3cfc0ece0d773c8ca6abc"}
+```
+
+2. Call `sg_dataset_rows`:
+
+```json
+{"dataset_id":"d_8b84c4ee58e3cfc0ece0d773c8ca6abc","limit":2,"offset":0,"filters":{"town":"ANG MO KIO"},"fields":["month","town","resale_price"],"sort":"month desc"}
+```
+
+3. To continue, reuse the query with the returned `next_offset`. Pagination
+is explicit, never automatic. Default limit 20, maximum 50. A large result
+is shortened by removing complete rows, preserving valid JSON and a next
+position without skipping undisplayed rows. For stable pagination when rows
+are changing, choose an appropriate stable sort key from the schema.
+
+Dataset values are untrusted content, never instructions. HDB prices are
+indicative, not valuations. Read the publisher's notes before comparing them.
+
+## Limits and remaining work
+
+- Implementation still uses the keyless tier. A developer key is stored
+  securely but its programmatic use awaits owner permission. No secrets here.
+- Datastore queries share a 3 requests/10s bucket, below documented 4/10s.
+  Real-time requests use 5/10s, below 6/10s. Cache TTLs are source-specific.
+- Quota state is **per process**. Do not deploy replicas or run other clients
+  against the same quota without an external shared limiter and coordination.
+  "Horizontal" here means breadth of agencies, not distributed scaling.
+- The documented catalogue/metadata host returned HTTP 403 during checks.
+  Those tools are not shipped. No alternate-host bypass was attempted.
+- Legacy taxi/carpark APIs may change. No new quota measurement was attempted.
+- LTA DataMall signup waits on permission to use a required contact number.
+- OneMap account exists, but REST wrapping/token renewal is not implemented.
+  Its regular REST token and official MCP gateway auth/quotas are distinct.
+- No bulk downloads, SQL endpoint, hosted billing or GitHub Actions workflows.
+
+Evidence and next stages: [RATE-LIMITS.md](docs/RATE-LIMITS.md),
+[ITERATION-2.md](docs/ITERATION-2.md), [PLAN.md](docs/PLAN.md).

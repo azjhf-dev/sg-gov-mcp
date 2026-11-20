@@ -60,7 +60,7 @@ async function waitReply(id, timeout = 40000) {
   send({ jsonrpc: "2.0", id: 2, method: "tools/list" });
   const list = await waitReply(2);
   const tools = (list.result.tools || []).map((t) => t.name);
-  check("tools/list returns >= 14 tools", tools.length >= 14);
+  check("tools/list returns 16 tools", tools.length === 16);
   console.log("tools:", tools.join(", "));
 
   send({ jsonrpc: "2.0", id: 3, method: "tools/call", params: { name: "sg_psi", arguments: {} } });
@@ -83,6 +83,12 @@ async function waitReply(id, timeout = 40000) {
   const psi2 = await waitReply(7);
   check("second sg_psi served from cache", psi2.result && psi2.result.content[0].text.includes("cache: hit"));
 
+  send({ jsonrpc: "2.0", id: 8, method: "tools/call", params: { name: "sg_dataset_rows", arguments: { dataset_id: "d_8b84c4ee58e3cfc0ece0d773c8ca6abc", limit: 2, filters: {town:"ANG MO KIO"}, fields:["month","town","resale_price"], sort:"month desc" } } });
+  const dataset = await waitReply(8);
+  check("sg_dataset_rows live filtered page", dataset.result && !dataset.result.isError && JSON.parse(dataset.result.content[0].text).records.length === 2);
+  send({ jsonrpc: "2.0", id: 9, method: "tools/call", params: { name: "sg_dataset_schema", arguments: {dataset_id: "d_8b84c4ee58e3cfc0ece0d773c8ca6abc"} } });
+  const schema = await waitReply(9);
+  check("sg_dataset_schema live", schema.result && !schema.result.isError && JSON.parse(schema.result.content[0].text).fields.some(f=>f.id==="resale_price"));
   console.log(`\n${pass} passed, ${fail} failed`);
   server.kill();
   process.exit(fail ? 1 : 0);
