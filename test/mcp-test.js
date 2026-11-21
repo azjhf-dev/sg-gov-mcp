@@ -60,7 +60,7 @@ async function waitReply(id, timeout = 40000) {
   send({ jsonrpc: "2.0", id: 2, method: "tools/list" });
   const list = await waitReply(2);
   const tools = (list.result.tools || []).map((t) => t.name);
-  check("tools/list returns 19 tools", tools.length === 19);
+  check("tools/list returns 21 tools", tools.length === 21);
   console.log("tools:", tools.join(", "));
 
   send({ jsonrpc: "2.0", id: 3, method: "tools/call", params: { name: "sg_psi", arguments: {} } });
@@ -101,6 +101,21 @@ async function waitReply(id, timeout = 40000) {
   send({ jsonrpc: "2.0", id: 12, method: "tools/call", params: { name: "sg_singstat_search", arguments: { keyword: "car population", search_option: "title" } } });
   const stSearch = await waitReply(12);
   check("sg_singstat_search live", stSearch.result && !stSearch.result.isError && JSON.parse(stSearch.result.content[0].text).records.some(r=>r.id==="M650681"));
+
+  if (process.env.ONEMAP_TOKEN) {
+    send({ jsonrpc: "2.0", id: 13, method: "tools/call", params: { name: "sg_onemap_search", arguments: { query: "200640" } } });
+    const om = await waitReply(13);
+    check("sg_onemap_search live geocode", om.result && !om.result.isError && JSON.parse(om.result.content[0].text).results[0].postal === "200640");
+
+    send({ jsonrpc: "2.0", id: 14, method: "tools/call", params: { name: "sg_onemap_planning_areas", arguments: { year: "2019" } } });
+    const omNames = await waitReply(14);
+    check("sg_onemap_planning_areas live", omNames.result && !omNames.result.isError && JSON.parse(omNames.result.content[0].text).count === 55);
+  } else {
+    send({ jsonrpc: "2.0", id: 13, method: "tools/call", params: { name: "sg_onemap_search", arguments: { query: "200640" } } });
+    const om = await waitReply(13);
+    check("OneMap tools fail clearly without ONEMAP_TOKEN", om.result && om.result.isError && om.result.content[0].text.includes("ONEMAP_TOKEN"));
+    console.log("skipping OneMap live calls: ONEMAP_TOKEN not set");
+  }
   console.log(`\n${pass} passed, ${fail} failed`);
   server.kill();
   process.exit(fail ? 1 : 0);

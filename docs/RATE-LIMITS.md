@@ -88,8 +88,10 @@ Live outcomes:
 
 ## OneMap (SLA)
 
-- Most APIs now require token auth (RS256 JWT, 3-day validity, renewable via
-  the current `/api/auth/post/getToken` flow after email signup).
+- REST APIs use token auth: POST `/api/auth/post/getToken` with the account's
+  email/password returns a JWT valid for 3 days (401 when expired; re-run
+  getToken to renew). Current docs read 2026-11-21:
+  https://www.onemap.gov.sg/apidocs/authentication.
 - Official OneMap MCP gateway exists (hosted by SLA on AWS Bedrock AgentCore):
   24h access token, 30d refresh token, **5 requests/second per token, burst
   10, 429 + exponential backoff recommended**.
@@ -99,9 +101,11 @@ Live outcomes:
   email claim, not an independently measured quota. Although 300/min and
   5/sec have equal averages, they do NOT establish interchangeable burst
   rules, quota scope or token systems. Never combine them.
-- The older `/api/public/postloginrenew` reference in iteration 1 is stale
-  relative to the current authentication docs. Token renewal is not yet
-  implemented or tested in this server.
+- Iteration 4 (2026-11-21): implemented `sg_onemap_search` (geocoding) and
+  `sg_onemap_planning_areas` (names). Server reads the token from the
+  `ONEMAP_TOKEN` env var, never stores or logs it. Client cap 30/min per
+  process. Live checks: geocode and names both 200. No 429 observed or
+  provoked. Polygons/themes/population not wrapped yet.
 
 ## SingStat Table Builder (tablebuilder.singstat.gov.sg)
 
@@ -124,10 +128,13 @@ Documented: https://www.tablebuilder.singstat.gov.sg/view-api/for-developers
 
 ## Signup state (2026-11-20)
 
-- data.gov.sg developer key created and stored securely. Programmatic use
-  still awaits owner approval; keyed-tier limits are documented, not measured.
-- OneMap account created, one authenticated theme-list call succeeded during
-  signup. Three-day REST token is not used by this server yet.
+- data.gov.sg developer key created and stored securely. One-time
+  programmatic check approved and run 2026-11-20 (keyless limits unchanged;
+  keyed PM2.5 returned 403, datastore 200); the copied key was deleted.
+  Keyed-tier limits remain documented, not measured.
+- OneMap account created 2026-11-20; owner approved one-time programmatic
+  credential use 2026-11-21. Token flows through `ONEMAP_TOKEN` only; nothing
+  secret is stored by the server.
 - LTA DataMall form not submitted: permission for a required contact number
   remains pending. No AccountKey has been obtained.
 

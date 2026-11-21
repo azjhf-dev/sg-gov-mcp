@@ -51,16 +51,20 @@ Blocked or deferred:
 
 ## Phase 4 - OneMap (geocoding, planning areas, population)
 
-- SLA already operates an official OneMap MCP gateway (5 req/s per token,
-  burst 10; 24h access token, 30d refresh). Options:
-  a. Integrate OneMap's REST APIs directly (token auth, 3-day JWT), or
-  b. Document the official MCP as the recommended path and only wrap what it
-     lacks.
-- OneMap account created. Regular REST API uses a 3-day token. Current
-  authentication docs show `/api/auth/post/getToken`, not the older path.
-- Next iteration: safe one-at-a-time token/auth support and geocoding tests,
-  only after secure programmatic credential access. Keep MCP gateway auth
-  separate; average rate arithmetic does not prove identical quotas.
+Done (iteration 4, 2026-11-21):
+
+- Token flow via documented `/api/auth/post/getToken` (3-day JWT), token read
+  from `ONEMAP_TOKEN` env var, never stored or logged by the server.
+- Tools: `sg_onemap_search` (geocoding) and `sg_onemap_planning_areas`
+  (names). Client cap 30/min per process under the email-stated 300/min.
+- Owner approved one-time programmatic credential use 2026-11-21. No new
+  signup; re-authenticate with the same flow when the token lapses.
+
+Deferred:
+
+- Boundary polygons, themes and population APIs (size/cost review first).
+- Automatic token renewal. The official OneMap MCP gateway (5 req/s, burst
+  10; 24h/30d tokens) remains a separate option with distinct auth/quotas.
 
 ## Phase 5 - More agencies and datasets
 
@@ -93,12 +97,14 @@ Candidates, each with its own limit discovery first:
 - GitHub token has repo scope only, so no GitHub Actions workflows until the
   owner adds the workflow scope. Tests run locally for now.
 
-## Iteration 4 checkpoint
+## Iteration 5 checkpoint
 
-Add OneMap auth/geocoding if secure programmatic credential access is
-granted. Otherwise continue keyless breadth from the Phase 5 candidate list
-(URA is token-gated; data.gov.sg collections API needs the 403 route issue
-resolved first, so PUB real-time additions or datastore-backed statistics
-are the likeliest fits). Do not resubmit the LTA signup (owner decision,
-2026-11-20); a key arriving by email goes to the vault only. Push and post a
-short Slack report. No new spend, no workflow files, no quota workarounds.
+OneMap shipped in iteration 4. Next: keyless breadth from the Phase 5
+candidate list (PUB real-time additions via data.gov.sg v2, verifying
+endpoint names exist first, or datastore-backed statistics), or OneMap
+population/themes with a size review. Before Nov 24 the OneMap token lapses;
+live OneMap checks then need a fresh getToken run (existing approval pattern:
+owner-approved one-time credential copy). Do not resubmit the LTA signup
+(owner decision, 2026-11-20); a key arriving by email goes to the vault only.
+Push and post a short Slack report. No new spend, no workflow files, no quota
+workarounds.

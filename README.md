@@ -3,10 +3,11 @@
 A dependency-free Node MCP stdio server for Singapore government open data.
 One interface across agencies. No API keys are needed for the implemented tools.
 
-## Status: iteration 3 (2026-11-21)
+## Status: iteration 4 (2026-11-21)
 
-19 tools: 12 real-time feeds, 2 general tabular dataset tools, 3 SingStat
-statistical-table tools, 2 diagnostics.
+21 tools: 12 real-time feeds, 2 general tabular dataset tools, 3 SingStat
+statistical-table tools, 2 OneMap geocoding/reference tools (token via
+`ONEMAP_TOKEN`), 2 diagnostics.
 The server is a prototype, not a hosted or production-hardened service.
 
 - Conservative sliding-window quota groups, below documented limits.
@@ -16,8 +17,9 @@ The server is a prototype, not a hosted or production-hardened service.
 - One paced retry on transient transport failures (timeout/connection drop);
   HTTP 403 and upstream error bodies are never retried or cached.
 - Cache bounded at 256 entries. Concurrent identical fetches share one request.
+- Auth tokens come from environment variables, never files, logs or commits.
 - No boundary probing, quota bypasses, proxy rotation or automatic page crawling.
-- 42 offline tests and 12 live MCP smoke checks pass on 2026-11-21.
+- 50 offline tests and 14 live MCP smoke checks pass on 2026-11-21.
 
 ## Run and test
 
@@ -66,6 +68,8 @@ Desktop config:
 | sg_singstat_search | Search ~2,800 SingStat statistical tables by keyword |
 | sg_singstat_metadata | SingStat table description, coverage and series list |
 | sg_singstat_table | Bounded SingStat table slice: sort, time/value filters |
+| sg_onemap_search | Geocode an SG address/postal/building via OneMap |
+| sg_onemap_planning_areas | 55 URA planning-area names by master-plan year |
 | sg_list_sources | Implemented source registry |
 | sg_rate_limit_status | Per-process quota groups, cooldown and cache count |
 
@@ -108,13 +112,23 @@ indicative, not valuations. Read the publisher's notes before comparing them.
 Note: with `sort_by`, `limit` counts series rows; without it, `limit` counts
 time-point columns per row. Pagination is explicit, never automatic.
 
+### OneMap tools
+
+OneMap tools need a token: obtain a 3-day JWT from the documented
+`POST /api/auth/post/getToken` flow with a registered OneMap account, then
+run the server with `ONEMAP_TOKEN` set. Re-run getToken when the token
+lapses (upstream answers 401). Never commit or share the token or password.
+Without `ONEMAP_TOKEN`, the OneMap tools return a clear setup error and every
+other tool works keyless.
+
 ## Limits and remaining work
 
 - Implementation still uses the keyless tier. A developer key is stored
   securely but its programmatic use awaits owner permission. No secrets here.
 - Datastore queries share a 3 requests/10s bucket, below documented 4/10s.
   Real-time requests use 5/10s, below 6/10s. SingStat uses 20/min per process,
-  below the documented 100/min per IP. Cache TTLs are source-specific.
+  below the documented 100/min per IP. OneMap uses 30/min per process, below
+  the signup email's 300/min. Cache TTLs are source-specific.
 - Quota state is **per process**. Do not deploy replicas or run other clients
   against the same quota without an external shared limiter and coordination.
   "Horizontal" here means breadth of agencies, not distributed scaling.
@@ -123,8 +137,9 @@ time-point columns per row. Pagination is explicit, never automatic.
 - Legacy taxi/carpark APIs may change. No new quota measurement was attempted.
 - LTA DataMall signup was attempted once and timed out unconfirmed; the
   owner decided against resubmitting (2026-11-20).
-- OneMap account exists, but REST wrapping/token renewal is not implemented.
-  Its regular REST token and official MCP gateway auth/quotas are distinct.
+- OneMap geocoding and planning-area names are implemented with token auth;
+  polygons, themes and population APIs are not wrapped yet. Token renewal is
+  manual (re-run getToken).
 - SingStat's gateway intermittently hangs requests; the client times out and
   retries once rather than adding parallelism. Detailed-trade parameters
   (cursor, markets, tradeTypes) are not implemented.
@@ -132,4 +147,4 @@ time-point columns per row. Pagination is explicit, never automatic.
 
 Evidence and next stages: [RATE-LIMITS.md](docs/RATE-LIMITS.md),
 [ITERATION-2.md](docs/ITERATION-2.md), [ITERATION-3.md](docs/ITERATION-3.md),
-[PLAN.md](docs/PLAN.md).
+[ITERATION-4.md](docs/ITERATION-4.md), [PLAN.md](docs/PLAN.md).

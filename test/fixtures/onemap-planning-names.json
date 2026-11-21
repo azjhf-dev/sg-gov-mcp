@@ -1,0 +1,224 @@
+{
+  "SearchResults": [
+    {
+      "id": 114,
+      "pln_area_n": "BEDOK"
+    },
+    {
+      "id": 120,
+      "pln_area_n": "BUKIT TIMAH"
+    },
+    {
+      "id": 117,
+      "pln_area_n": "BUKIT BATOK"
+    },
+    {
+      "id": 118,
+      "pln_area_n": "BUKIT MERAH"
+    },
+    {
+      "id": 121,
+      "pln_area_n": "CENTRAL WATER CATCHMENT"
+    },
+    {
+      "id": 126,
+      "pln_area_n": "DOWNTOWN CORE"
+    },
+    {
+      "id": 122,
+      "pln_area_n": "CHANGI"
+    },
+    {
+      "id": 123,
+      "pln_area_n": "CHANGI BAY"
+    },
+    {
+      "id": 132,
+      "pln_area_n": "LIM CHU KANG"
+    },
+    {
+      "id": 116,
+      "pln_area_n": "BOON LAY"
+    },
+    {
+      "id": 165,
+      "pln_area_n": "WESTERN WATER CATCHMENT"
+    },
+    {
+      "id": 166,
+      "pln_area_n": "WOODLANDS"
+    },
+    {
+      "id": 136,
+      "pln_area_n": "MARINE PARADE"
+    },
+    {
+      "id": 138,
+      "pln_area_n": "NEWTON"
+    },
+    {
+      "id": 139,
+      "pln_area_n": "NORTH-EASTERN ISLANDS"
+    },
+    {
+      "id": 141,
+      "pln_area_n": "ORCHARD"
+    },
+    {
+      "id": 143,
+      "pln_area_n": "PASIR RIS"
+    },
+    {
+      "id": 145,
+      "pln_area_n": "PIONEER"
+    },
+    {
+      "id": 146,
+      "pln_area_n": "PUNGGOL"
+    },
+    {
+      "id": 147,
+      "pln_area_n": "QUEENSTOWN"
+    },
+    {
+      "id": 151,
+      "pln_area_n": "SEMBAWANG"
+    },
+    {
+      "id": 154,
+      "pln_area_n": "SIMPANG"
+    },
+    {
+      "id": 159,
+      "pln_area_n": "TAMPINES"
+    },
+    {
+      "id": 160,
+      "pln_area_n": "TANGLIN"
+    },
+    {
+      "id": 163,
+      "pln_area_n": "TUAS"
+    },
+    {
+      "id": 164,
+      "pln_area_n": "WESTERN ISLANDS"
+    },
+    {
+      "id": 156,
+      "pln_area_n": "SOUTHERN ISLANDS"
+    },
+    {
+      "id": 119,
+      "pln_area_n": "BUKIT PANJANG"
+    },
+    {
+      "id": 115,
+      "pln_area_n": "BISHAN"
+    },
+    {
+      "id": 113,
+      "pln_area_n": "ANG MO KIO"
+    },
+    {
+      "id": 127,
+      "pln_area_n": "GEYLANG"
+    },
+    {
+      "id": 157,
+      "pln_area_n": "STRAITS VIEW"
+    },
+    {
+      "id": 129,
+      "pln_area_n": "JURONG EAST"
+    },
+    {
+      "id": 128,
+      "pln_area_n": "HOUGANG"
+    },
+    {
+      "id": 130,
+      "pln_area_n": "JURONG WEST"
+    },
+    {
+      "id": 124,
+      "pln_area_n": "CHOA CHU KANG"
+    },
+    {
+      "id": 131,
+      "pln_area_n": "KALLANG"
+    },
+    {
+      "id": 133,
+      "pln_area_n": "MANDAI"
+    },
+    {
+      "id": 161,
+      "pln_area_n": "TENGAH"
+    },
+    {
+      "id": 134,
+      "pln_area_n": "MARINA EAST"
+    },
+    {
+      "id": 135,
+      "pln_area_n": "MARINA SOUTH"
+    },
+    {
+      "id": 137,
+      "pln_area_n": "MUSEUM"
+    },
+    {
+      "id": 140,
+      "pln_area_n": "NOVENA"
+    },
+    {
+      "id": 142,
+      "pln_area_n": "OUTRAM"
+    },
+    {
+      "id": 144,
+      "pln_area_n": "PAYA LEBAR"
+    },
+    {
+      "id": 148,
+      "pln_area_n": "RIVER VALLEY"
+    },
+    {
+      "id": 149,
+      "pln_area_n": "ROCHOR"
+    },
+    {
+      "id": 150,
+      "pln_area_n": "SELETAR"
+    },
+    {
+      "id": 152,
+      "pln_area_n": "SENGKANG"
+    },
+    {
+      "id": 153,
+      "pln_area_n": "SERANGOON"
+    },
+    {
+      "id": 125,
+      "pln_area_n": "CLEMENTI"
+    },
+    {
+      "id": 162,
+      "pln_area_n": "TOA PAYOH"
+    },
+    {
+      "id": 155,
+      "pln_area_n": "SINGAPORE RIVER"
+    },
+    {
+      "id": 158,
+      "pln_area_n": "SUNGEI KADUT"
+    },
+    {
+      "id": 167,
+      "pln_area_n": "YISHUN"
+    }
+  ]
+}

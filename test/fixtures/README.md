@@ -34,3 +34,13 @@ Terms: Singapore Open Data Licence via the developer page's terms link.
 - `singstat-metadata.json`: full metadata response for M650681.
 - `singstat-tabledata.json`: tabledata for M650681 with limit=3 (1 series
   row, 3 annual columns).
+
+## OneMap fixtures (added 2026-11-21)
+
+Captured 2026-11-21 around 11:35 Asia/Singapore from OneMap's documented
+token-authenticated endpoints (https://www.onemap.gov.sg/apidocs/).
+Publisher: Singapore Land Authority. Public reference data; no credentials
+or tokens are present in these files.
+
+- `onemap-search.json`: geocode of postal code 200640 (one result).
+- `onemap-planning-names.json`: 2019 master-plan planning-area names.

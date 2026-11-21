@@ -14,8 +14,9 @@ const { SOURCES, listSources } = require("./sources");
 const { createClient } = require("./client");
 const { DATASET_TOOLS, DATASET_SOURCE, buildDatasetRequest, datasetOutput } = require("./datasets");
 const { SINGSTAT_TOOLS, SINGSTAT_SOURCE, buildSingstatRequest, singstatOutput } = require("./singstat");
+const { ONEMAP_TOOLS, ONEMAP_SOURCE, buildOnemapRequest, onemapOutput } = require("./onemap");
 const client = createClient();
-const VERSION = "0.3.0";
+const VERSION = "0.4.0";
 const MAX_BODY_CHARS = 12000;
 
 
@@ -62,6 +63,7 @@ function toolDefs() {
 
   defs.push(...DATASET_TOOLS);
   defs.push(...SINGSTAT_TOOLS);
+  defs.push(...ONEMAP_TOOLS);
   defs.push({
     name: "sg_list_sources",
     description: "List every Singapore government data source this server exposes, with agency, endpoint, update cadence, cache TTL and the client-side rate bucket.",
@@ -79,7 +81,8 @@ async function callTool(name, args) {
   if (name === "sg_list_sources") {
     return JSON.stringify([...listSources(),
       { tools: DATASET_TOOLS.map(t => t.name), endpoint: DATASET_SOURCE.url, client_rate_bucket: "3 req / 10s shared datastore group", cache_ttl_seconds: 300 },
-      { tools: SINGSTAT_TOOLS.map(t => t.name), endpoint: SINGSTAT_SOURCE.url, client_rate_bucket: "20 req / 60s shared SingStat group (documented upstream: 100/min per IP)", cache_ttl_seconds: 900 }], null, 2);
+      { tools: SINGSTAT_TOOLS.map(t => t.name), endpoint: SINGSTAT_SOURCE.url, client_rate_bucket: "20 req / 60s shared SingStat group (documented upstream: 100/min per IP)", cache_ttl_seconds: 900 },
+      { tools: ONEMAP_TOOLS.map(t => t.name), endpoint: ONEMAP_SOURCE.url, client_rate_bucket: "30 req / 60s shared OneMap group (signup email: 300/min regular APIs)", auth: "ONEMAP_TOKEN env var, 3-day JWT", cache_ttl_seconds: 3600 }], null, 2);
   }
   if (name === "sg_rate_limit_status") {
     const out = {
@@ -100,6 +103,11 @@ async function callTool(name, args) {
     const request = buildSingstatRequest(name, args);
     const { body, cached } = await client.request(request.src, request.url);
     return JSON.stringify({ source: request.url, cached, ...singstatOutput(body, request) });
+  }
+  if (ONEMAP_TOOLS.some(t => t.name === name)) {
+    const request = buildOnemapRequest(name, args);
+    const { body, cached } = await client.request(request.src, request.url);
+    return JSON.stringify({ source: request.url, cached, ...onemapOutput(body, request) });
   }
   const { body, cached, url, src } = await fetchSource(name, args || {});
   let text = JSON.stringify(body);

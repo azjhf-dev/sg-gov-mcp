@@ -8,6 +8,9 @@ const { SINGSTAT_TOOLS, SINGSTAT_SOURCE, buildSingstatRequest, singstatOutput } 
 const stSearch = require('./fixtures/singstat-search.json');
 const stMeta = require('./fixtures/singstat-metadata.json');
 const stTable = require('./fixtures/singstat-tabledata.json');
+const { ONEMAP_TOOLS, ONEMAP_SOURCE, buildOnemapRequest, onemapOutput } = require('../src/onemap');
+const omSearch = require('./fixtures/onemap-search.json');
+const omNames = require('./fixtures/onemap-planning-names.json');
 const rows = require('./fixtures/hdb-rows.json');
 const filtered = require('./fixtures/hdb-filtered.json');
 const id = 'd_8b84c4ee58e3cfc0ece0d773c8ca6abc';
@@ -116,6 +119,12 @@ test('API failure body is not cached',async()=> {
 test('redirects are forbidden',async()=> {
  const c=createClient({fetchImpl:async(url,opts)=>{assert.equal(opts.redirect,'error');return response(rows);},getBucket:()=>fakeBucket()});await c.request(src,'https://data.gov.sg/a');
 });
+test('source headers are sent but never part of the cache key',async()=> {
+ let seen;const c=createClient({fetchImpl:async(url,opts)=>{seen=opts.headers;return response(rows);},getBucket:()=>fakeBucket()});
+ const authedSrc={...src,headers:()=>({authorization:'secret-token'})};
+ await c.request(authedSrc,'https://www.onemap.gov.sg/x');assert.equal(seen.authorization,'secret-token');
+ const again=await c.request(authedSrc,'https://www.onemap.gov.sg/x');assert.equal(again.cached,true);
+});
 test('large payloads are rejected',async()=> {
  const c=createClient({fetchImpl:async()=>response({v:'x'.repeat(2100000)}),getBucket:()=>fakeBucket()});await assert.rejects(c.request(src,'https://data.gov.sg/a'),/2 MiB/);
 });
@@ -170,6 +179,50 @@ test('SingStat error status is rejected, not parsed',()=> {
  assert.throws(()=>singstatOutput({StatusCode:404,Message:'not found',Data:null},{kind:'metadata'}),/shape/);
 });
 
+// --- OneMap (token-authenticated) ---
+
+test('two OneMap tools have strict schemas and tokened source',()=> {
+ assert.equal(ONEMAP_TOOLS.length,2);
+ for(const t of ONEMAP_TOOLS) assert.equal(t.inputSchema.additionalProperties,false);
+ assert.equal(ONEMAP_SOURCE.host,'www.onemap.gov.sg');
+ assert.deepEqual(ONEMAP_SOURCE.bucket,{capacity:30,windowMs:60000});
+ assert.equal(typeof ONEMAP_SOURCE.headers,'function');
+});
+test('OneMap source refuses to send without a token',()=> {
+ const saved=process.env.ONEMAP_TOKEN;delete process.env.ONEMAP_TOKEN;
+ assert.throws(()=>ONEMAP_SOURCE.headers(),/ONEMAP_TOKEN/);
+ process.env.ONEMAP_TOKEN='test-token';
+ assert.deepEqual(ONEMAP_SOURCE.headers(),{authorization:'test-token'});
+ if(saved===undefined) delete process.env.ONEMAP_TOKEN; else process.env.ONEMAP_TOKEN=saved;
+});
+test('OneMap search URL uses official path with fixed flags',()=> {
+ const u=new URL(buildOnemapRequest('sg_onemap_search',{query:'Revenue House & 307987'}).url);
+ assert.equal(u.origin+ u.pathname,'https://www.onemap.gov.sg/api/common/elastic/search');
+ assert.equal(u.searchParams.get('searchVal'),'Revenue House & 307987');
+ assert.equal(u.searchParams.get('returnGeom'),'Y');assert.equal(u.searchParams.get('pageNum'),'1');
+});
+test('OneMap argument validation',()=> {
+ for(const a of [null,[],{query:''},{query:'x'.repeat(201)},{query:'a\nb'},{query:'x',page:0},{query:'x',page:1.5},{query:'x',token:'abc'}]) assert.throws(()=>buildOnemapRequest('sg_onemap_search',a));
+ for(const year of ['2020','abc',2019]) assert.throws(()=>buildOnemapRequest('sg_onemap_planning_areas',{year}));
+ assert.equal(new URL(buildOnemapRequest('sg_onemap_planning_areas',{year:'2019'}).url).searchParams.get('year'),'2019');
+ assert.equal(new URL(buildOnemapRequest('sg_onemap_planning_areas',{}).url).searchParams.get('year'),null);
+});
+test('OneMap search fixture yields one geocoded address',()=> {
+ const r=onemapOutput(omSearch,{kind:'search'});
+ assert.equal(r.found,1);assert.equal(r.results.length,1);
+ assert.equal(r.results[0].postal,'200640');assert.ok(Number(r.results[0].latitude)>1.3&&Number(r.results[0].latitude)<1.31);
+});
+test('OneMap planning-area fixture yields sorted names',()=> {
+ const r=onemapOutput(omNames,{kind:'names'});
+ assert.equal(r.count,55);assert.ok(r.planning_areas.includes('BEDOK'));
+ assert.deepEqual([...r.planning_areas].sort(),r.planning_areas);
+});
+test('OneMap error bodies and bad shapes are rejected',()=> {
+ assert.throws(()=>onemapOutput({error:'Invalid token'},{kind:'search'}),/OneMap error/);
+ assert.throws(()=>onemapOutput({found:'1',results:{}},{kind:'search'}),/shape/);
+ assert.throws(()=>onemapOutput({SearchResults:{}},{kind:'names'}),/shape/);
+});
+
 test('offline stdio handshake, discovery and invalid calls need no upstream',async()=> {
  const {spawn}=require('node:child_process');
  const child=spawn(process.execPath,[require('node:path').join(__dirname,'../src/server.js')],{stdio:['pipe','pipe','pipe']});
@@ -184,8 +237,8 @@ test('offline stdio handshake, discovery and invalid calls need no upstream',asy
   child.stdin.write(JSON.stringify({jsonrpc:'2.0',id:n,method,params})+'\n');
  });
  try{
-  const init=await rpc('initialize',{protocolVersion:'2024-11-05'});assert.equal(init.result.serverInfo.version,'0.3.0');
-  const list=await rpc('tools/list');assert.equal(list.result.tools.length,19);
+  const init=await rpc('initialize',{protocolVersion:'2024-11-05'});assert.equal(init.result.serverInfo.version,'0.4.0');
+  const list=await rpc('tools/list');assert.equal(list.result.tools.length,21);
   const bad=await rpc('tools/call',{name:'sg_dataset_rows',arguments:{dataset_id:'https://evil.invalid'}});assert.equal(bad.result.isError,true);
   const stats=await rpc('tools/call',{name:'sg_rate_limit_status'});assert.deepEqual(JSON.parse(stats.result.content[0].text).buckets,{});
  }finally{child.kill();}
