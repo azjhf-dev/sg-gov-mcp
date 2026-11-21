@@ -40,8 +40,9 @@ Blocked or deferred:
 
 ## Phase 3 - LTA DataMall
 
-- Agent email approved. Form still needs permission for a required contact
-  number; not submitted. Do not invent a number or use one without consent.
+- Agent email approved. One signup attempt with an owner-approved contact
+  number timed out unconfirmed (2026-11-20); the owner decided against
+  resubmitting. If a key arrives by email, it is stored in the vault only.
 - Tools: bus arrivals v3, bus services/routes/stops, train service alerts,
   traffic incidents/images, ERP rates, estimated travel times, EV charging.
 - Documented threshold: 10 million calls/day in the ToS; no per-second limit
@@ -63,9 +64,14 @@ Blocked or deferred:
 
 ## Phase 5 - More agencies and datasets
 
+Done:
+
+- SingStat Table Builder API (iteration 3): keyless search, metadata and
+  bounded table slices over ~2,800 tables from 70 agencies. Documented
+  100/min per IP; client cap 20/min per process. See docs/ITERATION-3.md.
+
 Candidates, each with its own limit discovery first:
 
-- SingStat Table Builder API (economy, population, households)
 - URA (property transactions, car parks) - token required
 - PUB (water levels, flood alerts via data.gov.sg real-time additions)
 - MOM / SingStat labour statistics via datastore
@@ -87,10 +93,12 @@ Candidates, each with its own limit discovery first:
 - GitHub token has repo scope only, so no GitHub Actions workflows until the
   owner adds the workflow scope. Tests run locally for now.
 
-## Iteration 3 checkpoint
+## Iteration 4 checkpoint
 
-Add OneMap auth/geocoding if secure credential access is granted. Otherwise
-continue independent keyless breadth via SingStat, first reading its current
-docs and quotas, with fixture tests and small live checks. Revisit LTA only
-after permission for the contact number. Push and post a short Slack report.
-No new spend, no workflow files, no quota workarounds.
+Add OneMap auth/geocoding if secure programmatic credential access is
+granted. Otherwise continue keyless breadth from the Phase 5 candidate list
+(URA is token-gated; data.gov.sg collections API needs the 403 route issue
+resolved first, so PUB real-time additions or datastore-backed statistics
+are the likeliest fits). Do not resubmit the LTA signup (owner decision,
+2026-11-20); a key arriving by email goes to the vault only. Push and post a
+short Slack report. No new spend, no workflow files, no quota workarounds.

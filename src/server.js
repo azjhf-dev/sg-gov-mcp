@@ -13,8 +13,9 @@ const { SOURCES, listSources } = require("./sources");
 
 const { createClient } = require("./client");
 const { DATASET_TOOLS, DATASET_SOURCE, buildDatasetRequest, datasetOutput } = require("./datasets");
+const { SINGSTAT_TOOLS, SINGSTAT_SOURCE, buildSingstatRequest, singstatOutput } = require("./singstat");
 const client = createClient();
-const VERSION = "0.2.0";
+const VERSION = "0.3.0";
 const MAX_BODY_CHARS = 12000;
 
 
@@ -60,6 +61,7 @@ function toolDefs() {
   }));
 
   defs.push(...DATASET_TOOLS);
+  defs.push(...SINGSTAT_TOOLS);
   defs.push({
     name: "sg_list_sources",
     description: "List every Singapore government data source this server exposes, with agency, endpoint, update cadence, cache TTL and the client-side rate bucket.",
@@ -75,7 +77,9 @@ function toolDefs() {
 
 async function callTool(name, args) {
   if (name === "sg_list_sources") {
-    return JSON.stringify([...listSources(), { tools: DATASET_TOOLS.map(t => t.name), endpoint: DATASET_SOURCE.url, client_rate_bucket: "3 req / 10s shared datastore group", cache_ttl_seconds: 300 }], null, 2);
+    return JSON.stringify([...listSources(),
+      { tools: DATASET_TOOLS.map(t => t.name), endpoint: DATASET_SOURCE.url, client_rate_bucket: "3 req / 10s shared datastore group", cache_ttl_seconds: 300 },
+      { tools: SINGSTAT_TOOLS.map(t => t.name), endpoint: SINGSTAT_SOURCE.url, client_rate_bucket: "20 req / 60s shared SingStat group (documented upstream: 100/min per IP)", cache_ttl_seconds: 900 }], null, 2);
   }
   if (name === "sg_rate_limit_status") {
     const out = {
@@ -91,6 +95,11 @@ async function callTool(name, args) {
     const request = buildDatasetRequest(name, args);
     const { body, cached } = await client.request(request.src, request.url);
     return JSON.stringify({ source: request.url, cached, ...datasetOutput(body, request) });
+  }
+  if (SINGSTAT_TOOLS.some(t => t.name === name)) {
+    const request = buildSingstatRequest(name, args);
+    const { body, cached } = await client.request(request.src, request.url);
+    return JSON.stringify({ source: request.url, cached, ...singstatOutput(body, request) });
   }
   const { body, cached, url, src } = await fetchSource(name, args || {});
   let text = JSON.stringify(body);

@@ -19,7 +19,7 @@ function createClient({ fetchImpl = globalThis.fetch, getBucket = bucketFor, now
         const timer = setTimeout(() => ctrl.abort(), 15000);
         try {
           const res = await fetchImpl(url, { signal: ctrl.signal, redirect: 'error',
-            headers: { accept: 'application/json', 'user-agent': 'sg-gov-mcp/0.2.0' } });
+            headers: { accept: 'application/json', 'user-agent': 'sg-gov-mcp/0.3.0' } });
           if (res.status === 429) {
             const delay = retryDelay(res.headers.get('retry-after'), now());
             bucket.defer(delay);
@@ -44,10 +44,15 @@ function createClient({ fetchImpl = globalThis.fetch, getBucket = bucketFor, now
           const body = JSON.parse(raw);
           if (body.code !== undefined && body.code !== 0) throw new Error(`upstream error code ${body.code}`);
           if (body.success === false) throw new Error('upstream dataset query unsuccessful');
+          if (typeof body.StatusCode === 'number' && body.StatusCode >= 400) throw new Error(`upstream error StatusCode ${body.StatusCode}`);
           if (cache.size >= 256) cache.delete(cache.keys().next().value);
           cache.set(url, { at: now(), body });
           return { body, cached: false };
         } catch (e) {
+          // Transient transport failures (timeout, connection drop) get one
+          // paced retry through the same bucket; then they surface.
+          const transient = e.name === 'AbortError' || e.name === 'TypeError';
+          if (transient && attempt === 0) continue;
           if (e.name === 'AbortError') throw new Error('upstream request timed out after 15s');
           throw e;
         } finally { clearTimeout(timer); }

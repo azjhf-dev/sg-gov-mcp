@@ -60,7 +60,7 @@ async function waitReply(id, timeout = 40000) {
   send({ jsonrpc: "2.0", id: 2, method: "tools/list" });
   const list = await waitReply(2);
   const tools = (list.result.tools || []).map((t) => t.name);
-  check("tools/list returns 16 tools", tools.length === 16);
+  check("tools/list returns 19 tools", tools.length === 19);
   console.log("tools:", tools.join(", "));
 
   send({ jsonrpc: "2.0", id: 3, method: "tools/call", params: { name: "sg_psi", arguments: {} } });
@@ -89,6 +89,18 @@ async function waitReply(id, timeout = 40000) {
   send({ jsonrpc: "2.0", id: 9, method: "tools/call", params: { name: "sg_dataset_schema", arguments: {dataset_id: "d_8b84c4ee58e3cfc0ece0d773c8ca6abc"} } });
   const schema = await waitReply(9);
   check("sg_dataset_schema live", schema.result && !schema.result.isError && JSON.parse(schema.result.content[0].text).fields.some(f=>f.id==="resale_price"));
+
+  send({ jsonrpc: "2.0", id: 10, method: "tools/call", params: { name: "sg_singstat_metadata", arguments: { resource_id: "M650681" } } });
+  const stMeta = await waitReply(10);
+  check("sg_singstat_metadata live", stMeta.result && !stMeta.result.isError && JSON.parse(stMeta.result.content[0].text).coverage.end === "2025");
+
+  send({ jsonrpc: "2.0", id: 11, method: "tools/call", params: { name: "sg_singstat_table", arguments: { resource_id: "M650681", limit: 3, sort_by: "key desc" } } });
+  const stTable = await waitReply(11);
+  check("sg_singstat_table live sorted page", stTable.result && !stTable.result.isError && (()=>{const o=JSON.parse(stTable.result.content[0].text);return o.rows.length===3 && o.rows[0].columns[0].key==="2025";})());
+
+  send({ jsonrpc: "2.0", id: 12, method: "tools/call", params: { name: "sg_singstat_search", arguments: { keyword: "car population", search_option: "title" } } });
+  const stSearch = await waitReply(12);
+  check("sg_singstat_search live", stSearch.result && !stSearch.result.isError && JSON.parse(stSearch.result.content[0].text).records.some(r=>r.id==="M650681"));
   console.log(`\n${pass} passed, ${fail} failed`);
   server.kill();
   process.exit(fail ? 1 : 0);

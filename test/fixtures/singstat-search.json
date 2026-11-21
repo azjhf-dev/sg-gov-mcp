@@ -1,0 +1,36 @@
+{
+ "Data": {
+  "generatedBy": "SingStat Table Builder",
+  "dateGenerated": "21/11/2026",
+  "total": 352,
+  "records": [
+   {
+    "theme": "Industry",
+    "subject": "Transport",
+    "topic": "Land Transport (including MRT and LRT)",
+    "id": "M650681",
+    "title": "Car Population By CC Rating (End Of Period), Annual",
+    "tableType": "time series"
+   },
+   {
+    "theme": "Industry",
+    "subject": "InfoComm and Media",
+    "topic": "InfoComm",
+    "id": "M651431",
+    "title": "Fixed Internet Broadband Subscriptions Per 100 Population, Annual",
+    "tableType": "time series"
+   },
+   {
+    "theme": "Industry",
+    "subject": "Transport",
+    "topic": "Land Transport (including MRT and LRT)",
+    "id": "M650391",
+    "title": "Motor Vehicle Population By Type Of Vehicle (End Of Period), Annual",
+    "tableType": "time series"
+   }
+  ]
+ },
+ "DataCount": 1,
+ "StatusCode": 200,
+ "Message": ""
+}

@@ -103,6 +103,25 @@ Live outcomes:
   relative to the current authentication docs. Token renewal is not yet
   implemented or tested in this server.
 
+## SingStat Table Builder (tablebuilder.singstat.gov.sg)
+
+Documented: https://www.tablebuilder.singstat.gov.sg/view-api/for-developers
+(read 2026-11-21, with OpenAPI spec).
+
+- 100 calls/minute per IP address, keyless, no signup.
+- Our client-side cap: 20 requests/minute per process, plus caching
+  (search/metadata 1h, table data 15min).
+- Functional checks 2026-11-21 (~08:38-08:48 SGT): resourceid search,
+  metadata and tabledata all returned HTTP 200 with documented shapes.
+  No 429 observed or provoked; no rate-limit headers seen.
+- `tabledata` `limit` semantics shift when `sortBy` is present (columns per
+  row vs rows). Recorded in docs/ITERATION-3.md.
+- The gateway intermittently hangs requests (10s+ stalls, zero bytes, then
+  recovery) for both curl and Node clients. Not quota-shaped. Handled by
+  15s timeout plus one paced retry; do not add parallelism to compensate.
+- Detailed-trade-only parameters (cursor, markets, tradeTypes, searchoption)
+  are not implemented.
+
 ## Signup state (2026-11-20)
 
 - data.gov.sg developer key created and stored securely. Programmatic use
@@ -111,6 +130,11 @@ Live outcomes:
   signup. Three-day REST token is not used by this server yet.
 - LTA DataMall form not submitted: permission for a required contact number
   remains pending. No AccountKey has been obtained.
+
+Update 2026-11-20/21: an LTA form submission was attempted once with an
+owner-approved contact number; the submit click timed out and no confirmation
+or key email arrived. The owner decided not to resubmit. Any future key email
+goes to the vault only.
 
 Secrets are never stored in this repository or posted to Slack.
 

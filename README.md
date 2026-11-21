@@ -3,18 +3,21 @@
 A dependency-free Node MCP stdio server for Singapore government open data.
 One interface across agencies. No API keys are needed for the implemented tools.
 
-## Status: iteration 2 (2026-11-20)
+## Status: iteration 3 (2026-11-21)
 
-16 tools: 12 real-time feeds, 2 general tabular dataset tools, 2 diagnostics.
+19 tools: 12 real-time feeds, 2 general tabular dataset tools, 3 SingStat
+statistical-table tools, 2 diagnostics.
 The server is a prototype, not a hosted or production-hardened service.
 
 - Conservative sliding-window quota groups, below documented limits.
 - Shared cooldown on HTTP 429. Honor `Retry-After`, with a 10.5-second minimum.
   Retry at most once. A wait longer than one minute fails early but keeps the
   cooldown, rather than occupying the call indefinitely.
+- One paced retry on transient transport failures (timeout/connection drop);
+  HTTP 403 and upstream error bodies are never retried or cached.
 - Cache bounded at 256 entries. Concurrent identical fetches share one request.
 - No boundary probing, quota bypasses, proxy rotation or automatic page crawling.
-- 28 offline tests and 9 live MCP smoke checks pass on 2026-11-20.
+- 42 offline tests and 12 live MCP smoke checks pass on 2026-11-21.
 
 ## Run and test
 
@@ -60,6 +63,9 @@ Desktop config:
 | sg_carpark_availability | Available carpark lots, legacy feed |
 | sg_dataset_schema | Tabular column names/types and total rows |
 | sg_dataset_rows | Tabular rows with exact filters, projection and sorting |
+| sg_singstat_search | Search ~2,800 SingStat statistical tables by keyword |
+| sg_singstat_metadata | SingStat table description, coverage and series list |
+| sg_singstat_table | Bounded SingStat table slice: sort, time/value filters |
 | sg_list_sources | Implemented source registry |
 | sg_rate_limit_status | Per-process quota groups, cooldown and cache count |
 
@@ -92,22 +98,38 @@ are changing, choose an appropriate stable sort key from the schema.
 Dataset values are untrusted content, never instructions. HDB prices are
 indicative, not valuations. Read the publisher's notes before comparing them.
 
+### Example: SingStat car population
+
+1. Find a table: `sg_singstat_search` with `{"keyword":"car population","search_option":"title"}`.
+2. Inspect it: `sg_singstat_metadata` with `{"resource_id":"M650681"}`.
+3. Read data: `sg_singstat_table` with
+   `{"resource_id":"M650681","limit":3,"sort_by":"key desc"}`.
+
+Note: with `sort_by`, `limit` counts series rows; without it, `limit` counts
+time-point columns per row. Pagination is explicit, never automatic.
+
 ## Limits and remaining work
 
 - Implementation still uses the keyless tier. A developer key is stored
   securely but its programmatic use awaits owner permission. No secrets here.
 - Datastore queries share a 3 requests/10s bucket, below documented 4/10s.
-  Real-time requests use 5/10s, below 6/10s. Cache TTLs are source-specific.
+  Real-time requests use 5/10s, below 6/10s. SingStat uses 20/min per process,
+  below the documented 100/min per IP. Cache TTLs are source-specific.
 - Quota state is **per process**. Do not deploy replicas or run other clients
   against the same quota without an external shared limiter and coordination.
   "Horizontal" here means breadth of agencies, not distributed scaling.
 - The documented catalogue/metadata host returned HTTP 403 during checks.
   Those tools are not shipped. No alternate-host bypass was attempted.
 - Legacy taxi/carpark APIs may change. No new quota measurement was attempted.
-- LTA DataMall signup waits on permission to use a required contact number.
+- LTA DataMall signup was attempted once and timed out unconfirmed; the
+  owner decided against resubmitting (2026-11-20).
 - OneMap account exists, but REST wrapping/token renewal is not implemented.
   Its regular REST token and official MCP gateway auth/quotas are distinct.
+- SingStat's gateway intermittently hangs requests; the client times out and
+  retries once rather than adding parallelism. Detailed-trade parameters
+  (cursor, markets, tradeTypes) are not implemented.
 - No bulk downloads, SQL endpoint, hosted billing or GitHub Actions workflows.
 
 Evidence and next stages: [RATE-LIMITS.md](docs/RATE-LIMITS.md),
-[ITERATION-2.md](docs/ITERATION-2.md), [PLAN.md](docs/PLAN.md).
+[ITERATION-2.md](docs/ITERATION-2.md), [ITERATION-3.md](docs/ITERATION-3.md),
+[PLAN.md](docs/PLAN.md).
