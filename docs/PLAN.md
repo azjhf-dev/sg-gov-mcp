@@ -97,14 +97,14 @@ Candidates, each with its own limit discovery first:
 - GitHub token has repo scope only, so no GitHub Actions workflows until the
   owner adds the workflow scope. Tests run locally for now.
 
-## Iteration 5 checkpoint
+## Iteration 6 checkpoint
 
-OneMap shipped in iteration 4. Next: keyless breadth from the Phase 5
-candidate list (PUB real-time additions via data.gov.sg v2, verifying
-endpoint names exist first, or datastore-backed statistics), or OneMap
-population/themes with a size review. Before Nov 24 the OneMap token lapses;
-live OneMap checks then need a fresh getToken run (existing approval pattern:
-owner-approved one-time credential copy). Do not resubmit the LTA signup
-(owner decision, 2026-11-20); a key arriving by email goes to the vault only.
-Push and post a short Slack report. No new spend, no workflow files, no quota
-workarounds.
+Iterations 4-5 shipped OneMap and legacy v1 additions. Next: datastore-backed
+statistics curation (e.g. MOM/labour datasets via the existing dataset
+tools), PUB feeds if they appear in the official v2 real-time list
+(https://data.gov.sg/datasets?formats=API), or OneMap population/themes after
+a response-size review. The OneMap REST token lapses ~Nov 24; a fresh
+getToken run needs another owner-approved one-time credential copy. Do not
+resubmit the LTA signup (owner decision, 2026-11-20); a key arriving by
+email goes to the vault only. Push and post a short Slack report. No new
+spend, no workflow files, no quota workarounds.

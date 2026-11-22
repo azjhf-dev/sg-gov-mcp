@@ -44,3 +44,14 @@ or tokens are present in these files.
 
 - `onemap-search.json`: geocode of postal code 200640 (one result).
 - `onemap-planning-names.json`: 2019 master-plan planning-area names.
+
+## Legacy v1 fixtures (added 2026-11-22)
+
+Captured 2026-11-22 around 08:05 Asia/Singapore from keyless legacy
+api.data.gov.sg v1 endpoints. Public data: NEA weather outlook, LTA camera
+metadata.
+
+- `nea-4day-forecast.json`: 4-day weather outlook (NEA).
+- `lta-traffic-images.json`: traffic camera list with image links (LTA).
+  Image URLs point to images.data.gov.sg and rotate; they are fixtures, not
+  live camera feeds.

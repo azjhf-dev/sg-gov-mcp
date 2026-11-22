@@ -11,6 +11,9 @@ const stTable = require('./fixtures/singstat-tabledata.json');
 const { ONEMAP_TOOLS, ONEMAP_SOURCE, buildOnemapRequest, onemapOutput } = require('../src/onemap');
 const omSearch = require('./fixtures/onemap-search.json');
 const omNames = require('./fixtures/onemap-planning-names.json');
+const { SOURCES } = require('../src/sources');
+const nea4day = require('./fixtures/nea-4day-forecast.json');
+const ltaCams = require('./fixtures/lta-traffic-images.json');
 const rows = require('./fixtures/hdb-rows.json');
 const filtered = require('./fixtures/hdb-filtered.json');
 const id = 'd_8b84c4ee58e3cfc0ece0d773c8ca6abc';
@@ -223,6 +226,23 @@ test('OneMap error bodies and bad shapes are rejected',()=> {
  assert.throws(()=>onemapOutput({SearchResults:{}},{kind:'names'}),/shape/);
 });
 
+// --- Iteration 5: legacy v1 additions (NEA 4-day outlook, LTA traffic cameras) ---
+
+test('new v1 sources share the conservative legacy bucket',()=> {
+ for(const id of ['sg_weather_forecast_4day','sg_traffic_images']) {
+  const s=SOURCES[id];assert.ok(s,id);assert.equal(s.host,'api.data.gov.sg');
+  assert.deepEqual(s.bucket,{capacity:5,windowMs:10000});assert.equal(s.dateParam,true);
+ }
+});
+test('4-day forecast fixture has four daily outlooks',()=> {
+ const f=nea4day.items[0].forecasts;assert.equal(f.length,4);
+ assert.ok(f[0].forecast&&f[0].temperature.high>=f[0].temperature.low);
+});
+test('traffic camera fixture has located image links',()=> {
+ const cams=ltaCams.items[0].cameras;assert.ok(cams.length>0);
+ for(const c of cams){assert.ok(c.camera_id&&c.image.startsWith('https://'));assert.ok(c.location.latitude>1.2&&c.location.latitude<1.5);}
+});
+
 test('offline stdio handshake, discovery and invalid calls need no upstream',async()=> {
  const {spawn}=require('node:child_process');
  const child=spawn(process.execPath,[require('node:path').join(__dirname,'../src/server.js')],{stdio:['pipe','pipe','pipe']});
@@ -237,8 +257,8 @@ test('offline stdio handshake, discovery and invalid calls need no upstream',asy
   child.stdin.write(JSON.stringify({jsonrpc:'2.0',id:n,method,params})+'\n');
  });
  try{
-  const init=await rpc('initialize',{protocolVersion:'2024-11-05'});assert.equal(init.result.serverInfo.version,'0.4.0');
-  const list=await rpc('tools/list');assert.equal(list.result.tools.length,21);
+  const init=await rpc('initialize',{protocolVersion:'2024-11-05'});assert.equal(init.result.serverInfo.version,'0.5.0');
+  const list=await rpc('tools/list');assert.equal(list.result.tools.length,23);
   const bad=await rpc('tools/call',{name:'sg_dataset_rows',arguments:{dataset_id:'https://evil.invalid'}});assert.equal(bad.result.isError,true);
   const stats=await rpc('tools/call',{name:'sg_rate_limit_status'});assert.deepEqual(JSON.parse(stats.result.content[0].text).buckets,{});
  }finally{child.kill();}

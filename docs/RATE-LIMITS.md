@@ -43,6 +43,12 @@ stricter number as true until measured.
 `wind-speed`. All at `https://api-open.data.gov.sg/v2/real-time/api/<name>`,
 optional `?date=` filter, all return `code: 0` on success.
 
+### Working keyless v1 endpoints added 2026-11-22
+
+`environment/4-day-weather-forecast` (4 daily outlooks),
+`transport/traffic-images` (8 cameras at check time, image links on
+images.data.gov.sg).
+
 404 (not present under these names): `four-day-forecast`,
 `four-day-weather-forecast`, `uv-index`, `taxi`, `taxi-availability`,
 `carpark`, `carpark-availability`, `traffic-images`, `flood-warnings`,
@@ -50,12 +56,15 @@ optional `?date=` filter, all return `code: 0` on success.
 
 ## Legacy api.data.gov.sg v1 (keyless)
 
-- Still live for `environment/*` and `transport/taxi-availability`,
-  `transport/carpark-availability`.
+- Still live for `environment/*` (including `4-day-weather-forecast`, which
+  has no v2 equivalent) and `transport/taxi-availability`,
+  `transport/carpark-availability`, `transport/traffic-images`.
 - No documented rate limit found. Measured: 10 rapid requests all 200, no
   429, no rate-limit headers. We still self-cap at 5 req/10s and cache.
 - data.gov.sg is migrating services to the new platform; these endpoints may
   be retired. Watch for redirects/deprecation notices.
+- Iteration 5 (2026-11-22): `transport/estimated-travel-times` returned HTTP
+  403 on one request. Not retried; not available keyless.
 
 ## LTA DataMall (datamall2.mytransport.sg)
 

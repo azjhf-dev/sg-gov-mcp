@@ -60,7 +60,7 @@ async function waitReply(id, timeout = 40000) {
   send({ jsonrpc: "2.0", id: 2, method: "tools/list" });
   const list = await waitReply(2);
   const tools = (list.result.tools || []).map((t) => t.name);
-  check("tools/list returns 21 tools", tools.length === 21);
+  check("tools/list returns 23 tools", tools.length === 23);
   console.log("tools:", tools.join(", "));
 
   send({ jsonrpc: "2.0", id: 3, method: "tools/call", params: { name: "sg_psi", arguments: {} } });
@@ -101,6 +101,14 @@ async function waitReply(id, timeout = 40000) {
   send({ jsonrpc: "2.0", id: 12, method: "tools/call", params: { name: "sg_singstat_search", arguments: { keyword: "car population", search_option: "title" } } });
   const stSearch = await waitReply(12);
   check("sg_singstat_search live", stSearch.result && !stSearch.result.isError && JSON.parse(stSearch.result.content[0].text).records.some(r=>r.id==="M650681"));
+
+  send({ jsonrpc: "2.0", id: 15, method: "tools/call", params: { name: "sg_weather_forecast_4day", arguments: {} } });
+  const f4 = await waitReply(15);
+  check("sg_weather_forecast_4day live", f4.result && !f4.result.isError && /forecast/i.test(f4.result.content[0].text));
+
+  send({ jsonrpc: "2.0", id: 16, method: "tools/call", params: { name: "sg_traffic_images", arguments: {} } });
+  const cams = await waitReply(16);
+  check("sg_traffic_images live", cams.result && !cams.result.isError && /camera_id/.test(cams.result.content[0].text));
 
   if (process.env.ONEMAP_TOKEN) {
     send({ jsonrpc: "2.0", id: 13, method: "tools/call", params: { name: "sg_onemap_search", arguments: { query: "200640" } } });

@@ -16,7 +16,7 @@ const { DATASET_TOOLS, DATASET_SOURCE, buildDatasetRequest, datasetOutput } = re
 const { SINGSTAT_TOOLS, SINGSTAT_SOURCE, buildSingstatRequest, singstatOutput } = require("./singstat");
 const { ONEMAP_TOOLS, ONEMAP_SOURCE, buildOnemapRequest, onemapOutput } = require("./onemap");
 const client = createClient();
-const VERSION = "0.4.0";
+const VERSION = "0.5.0";
 const MAX_BODY_CHARS = 12000;
 
 
