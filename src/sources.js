@@ -121,6 +121,16 @@ const SOURCES = {
     dateParam: true,
     description: "Wind speed readings per station.",
   },
+  sg_flood_alerts: {
+    host: "api-open.data.gov.sg",
+    bucket: V2_BUCKET,
+    url: `${V2}/weather/flood-alerts`,
+    ttlMs: 2 * MIN,
+    agency: "PUB via data.gov.sg",
+    updates: "every 2 min",
+    dateParam: true,
+    description: "Real-time flood alert events across Singapore (records list; empty when no active alerts).",
+  },
   sg_weather_forecast_4day: {
     host: "api.data.gov.sg",
     bucket: V1_BUCKET,

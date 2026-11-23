@@ -14,6 +14,7 @@ const omNames = require('./fixtures/onemap-planning-names.json');
 const { SOURCES } = require('../src/sources');
 const nea4day = require('./fixtures/nea-4day-forecast.json');
 const ltaCams = require('./fixtures/lta-traffic-images.json');
+const pubFlood = require('./fixtures/pub-flood-alerts.json');
 const rows = require('./fixtures/hdb-rows.json');
 const filtered = require('./fixtures/hdb-filtered.json');
 const id = 'd_8b84c4ee58e3cfc0ece0d773c8ca6abc';
@@ -243,6 +244,17 @@ test('traffic camera fixture has located image links',()=> {
  for(const c of cams){assert.ok(c.camera_id&&c.image.startsWith('https://'));assert.ok(c.location.latitude>1.2&&c.location.latitude<1.5);}
 });
 
+// --- Iteration 6: PUB flood alerts (v2 real-time /weather/flood-alerts) ---
+
+test('flood alerts source uses the v2 keyless bucket and 2-minute cache',()=> {
+ const s=SOURCES.sg_flood_alerts;assert.ok(s);assert.equal(s.host,'api-open.data.gov.sg');
+ assert.deepEqual(s.bucket,{capacity:5,windowMs:10000});assert.equal(s.ttlMs,2*60*1000);
+ assert.equal(s.dateParam,true);assert.ok(s.url.endsWith('/weather/flood-alerts'));
+});
+test('flood alerts fixture has the v2 envelope and a records list',()=> {
+ assert.equal(pubFlood.code,0);assert.ok(pubFlood.data&&Array.isArray(pubFlood.data.records));
+});
+
 test('offline stdio handshake, discovery and invalid calls need no upstream',async()=> {
  const {spawn}=require('node:child_process');
  const child=spawn(process.execPath,[require('node:path').join(__dirname,'../src/server.js')],{stdio:['pipe','pipe','pipe']});
@@ -257,8 +269,8 @@ test('offline stdio handshake, discovery and invalid calls need no upstream',asy
   child.stdin.write(JSON.stringify({jsonrpc:'2.0',id:n,method,params})+'\n');
  });
  try{
-  const init=await rpc('initialize',{protocolVersion:'2024-11-05'});assert.equal(init.result.serverInfo.version,'0.5.0');
-  const list=await rpc('tools/list');assert.equal(list.result.tools.length,23);
+  const init=await rpc('initialize',{protocolVersion:'2024-11-05'});assert.equal(init.result.serverInfo.version,'0.6.0');
+  const list=await rpc('tools/list');assert.equal(list.result.tools.length,24);
   const bad=await rpc('tools/call',{name:'sg_dataset_rows',arguments:{dataset_id:'https://evil.invalid'}});assert.equal(bad.result.isError,true);
   const stats=await rpc('tools/call',{name:'sg_rate_limit_status'});assert.deepEqual(JSON.parse(stats.result.content[0].text).buckets,{});
  }finally{child.kill();}

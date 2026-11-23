@@ -49,6 +49,14 @@ optional `?date=` filter, all return `code: 0` on success.
 `transport/traffic-images` (8 cameras at check time, image links on
 images.data.gov.sg).
 
+### Working keyless v2 endpoints added 2026-11-23
+
+`weather/flood-alerts` (PUB): real-time flood alert events, updated every 2
+minutes per the dataset page. Response envelope is `data.records` (not
+`items`) plus a `paginationToken`. Verified with one request: 200, `code: 0`,
+empty records list (no active alerts at check time). Uses the same v2 keyless
+bucket (measured 6/10s; client cap 5/10s) with a 2-minute cache.
+
 404 (not present under these names): `four-day-forecast`,
 `four-day-weather-forecast`, `uv-index`, `taxi`, `taxi-availability`,
 `carpark`, `carpark-availability`, `traffic-images`, `flood-warnings`,

@@ -55,3 +55,11 @@ metadata.
 - `lta-traffic-images.json`: traffic camera list with image links (LTA).
   Image URLs point to images.data.gov.sg and rotate; they are fixtures, not
   live camera feeds.
+
+## v2 real-time fixtures (added 2026-11-23)
+
+Captured 2026-11-23 around 09:19 Asia/Singapore from the keyless v2
+real-time API. Public data: PUB flood alerts.
+
+- `pub-flood-alerts.json`: flood alert envelope; `data.records` was empty
+  (no active alerts). Record-level fields are not yet observed live.

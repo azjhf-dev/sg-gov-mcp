@@ -60,7 +60,7 @@ async function waitReply(id, timeout = 40000) {
   send({ jsonrpc: "2.0", id: 2, method: "tools/list" });
   const list = await waitReply(2);
   const tools = (list.result.tools || []).map((t) => t.name);
-  check("tools/list returns 23 tools", tools.length === 23);
+  check("tools/list returns 24 tools", tools.length === 24);
   console.log("tools:", tools.join(", "));
 
   send({ jsonrpc: "2.0", id: 3, method: "tools/call", params: { name: "sg_psi", arguments: {} } });
@@ -109,6 +109,10 @@ async function waitReply(id, timeout = 40000) {
   send({ jsonrpc: "2.0", id: 16, method: "tools/call", params: { name: "sg_traffic_images", arguments: {} } });
   const cams = await waitReply(16);
   check("sg_traffic_images live", cams.result && !cams.result.isError && /camera_id/.test(cams.result.content[0].text));
+
+  send({ jsonrpc: "2.0", id: 17, method: "tools/call", params: { name: "sg_flood_alerts", arguments: {} } });
+  const flood = await waitReply(17);
+  check("sg_flood_alerts live", flood.result && !flood.result.isError && /"records"/.test(flood.result.content[0].text));
 
   if (process.env.ONEMAP_TOKEN) {
     send({ jsonrpc: "2.0", id: 13, method: "tools/call", params: { name: "sg_onemap_search", arguments: { query: "200640" } } });

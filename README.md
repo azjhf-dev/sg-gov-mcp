@@ -3,9 +3,9 @@
 A dependency-free Node MCP stdio server for Singapore government open data.
 One interface across agencies. No API keys are needed for the implemented tools.
 
-## Status: iteration 5 (2026-11-22)
+## Status: iteration 6 (2026-11-23)
 
-23 tools: 14 real-time feeds (v2 + legacy v1), 2 general tabular dataset
+24 tools: 15 real-time feeds (v2 + legacy v1), 2 general tabular dataset
 tools, 3 SingStat statistical-table tools, 2 OneMap geocoding/reference
 tools (token via `ONEMAP_TOKEN`), 2 diagnostics.
 The server is a prototype, not a hosted or production-hardened service.
@@ -19,7 +19,7 @@ The server is a prototype, not a hosted or production-hardened service.
 - Cache bounded at 256 entries. Concurrent identical fetches share one request.
 - Auth tokens come from environment variables, never files, logs or commits.
 - No boundary probing, quota bypasses, proxy rotation or automatic page crawling.
-- 53 offline tests and 15 live MCP smoke checks pass on 2026-11-22.
+- 55 offline tests and 16 live MCP smoke checks pass on 2026-11-23.
 
 ## Run and test
 
@@ -61,6 +61,7 @@ Desktop config:
 | sg_relative_humidity | Station humidity |
 | sg_wind_direction | Station wind direction |
 | sg_wind_speed | Station wind speed |
+| sg_flood_alerts | PUB real-time flood alert events |
 | sg_weather_forecast_4day | NEA 4-day island-wide outlook (legacy v1 only) |
 | sg_traffic_images | LTA traffic camera images with locations |
 | sg_taxi_availability | Available taxis, legacy LTA feed |
@@ -151,4 +152,5 @@ other tool works keyless.
 Evidence and next stages: [RATE-LIMITS.md](docs/RATE-LIMITS.md),
 [ITERATION-2.md](docs/ITERATION-2.md), [ITERATION-3.md](docs/ITERATION-3.md),
 [ITERATION-4.md](docs/ITERATION-4.md), [ITERATION-5.md](docs/ITERATION-5.md),
+[ITERATION-6.md](docs/ITERATION-6.md),
 [PLAN.md](docs/PLAN.md).

@@ -73,11 +73,14 @@ Done:
 - SingStat Table Builder API (iteration 3): keyless search, metadata and
   bounded table slices over ~2,800 tables from 70 agencies. Documented
   100/min per IP; client cap 20/min per process. See docs/ITERATION-3.md.
+- PUB flood alerts via the v2 real-time endpoint (iteration 6). See
+  docs/ITERATION-6.md.
 
 Candidates, each with its own limit discovery first:
 
 - URA (property transactions, car parks) - token required
-- PUB (water levels, flood alerts via data.gov.sg real-time additions)
+- PUB water levels (currently a bulk poll-download dataset; deferred with
+  the other bulk downloads)
 - MOM / SingStat labour statistics via datastore
 - data.gov.sg collections API for catalogue browsing as a tool
 - IPOS trademarks/patents (newly onboarded to data.gov.sg)
@@ -97,14 +100,14 @@ Candidates, each with its own limit discovery first:
 - GitHub token has repo scope only, so no GitHub Actions workflows until the
   owner adds the workflow scope. Tests run locally for now.
 
-## Iteration 6 checkpoint
+## Iteration 7 checkpoint
 
-Iterations 4-5 shipped OneMap and legacy v1 additions. Next: datastore-backed
-statistics curation (e.g. MOM/labour datasets via the existing dataset
-tools), PUB feeds if they appear in the official v2 real-time list
-(https://data.gov.sg/datasets?formats=API), or OneMap population/themes after
-a response-size review. The OneMap REST token lapses ~Nov 24; a fresh
-getToken run needs another owner-approved one-time credential copy. Do not
-resubmit the LTA signup (owner decision, 2026-11-20); a key arriving by
-email goes to the vault only. Push and post a short Slack report. No new
-spend, no workflow files, no quota workarounds.
+Iterations 4-6 shipped OneMap, legacy v1 additions and PUB flood alerts.
+Next: datastore-backed statistics curation (e.g. MOM/labour datasets via the
+existing dataset tools), or OneMap population/themes after a response-size
+review, or flood-alerts record-shape confirmation from the downloadable API
+spec. The OneMap REST token lapses ~Nov 24; a fresh getToken run needs
+another owner-approved one-time credential copy. Do not resubmit the LTA
+signup (owner decision, 2026-11-20); a key arriving by email goes to the
+vault only. Push and post a short Slack report. No new spend, no workflow
+files, no quota workarounds.
