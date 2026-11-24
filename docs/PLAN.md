@@ -75,6 +75,9 @@ Done:
   100/min per IP; client cap 20/min per process. See docs/ITERATION-3.md.
 - PUB flood alerts via the v2 real-time endpoint (iteration 6). See
   docs/ITERATION-6.md.
+- Curated featured-datasets registry: HDB resale prices, MOM/SingStat
+  labour series, each verified live once (iteration 7). See
+  docs/ITERATION-7.md.
 
 Candidates, each with its own limit discovery first:
 
@@ -100,14 +103,14 @@ Candidates, each with its own limit discovery first:
 - GitHub token has repo scope only, so no GitHub Actions workflows until the
   owner adds the workflow scope. Tests run locally for now.
 
-## Iteration 7 checkpoint
+## Iteration 8 checkpoint
 
-Iterations 4-6 shipped OneMap, legacy v1 additions and PUB flood alerts.
-Next: datastore-backed statistics curation (e.g. MOM/labour datasets via the
-existing dataset tools), or OneMap population/themes after a response-size
-review, or flood-alerts record-shape confirmation from the downloadable API
-spec. The OneMap REST token lapses ~Nov 24; a fresh getToken run needs
-another owner-approved one-time credential copy. Do not resubmit the LTA
+Iterations 4-7 shipped OneMap, legacy v1 additions, PUB flood alerts and a
+curated featured-datasets registry (HDB resale, MOM/SingStat labour series).
+Next: OneMap population/themes after a response-size review (needs a fresh
+getToken run with another owner-approved one-time credential copy),
+flood-alerts record shape from the API spec or a future active alert, or
+more curated datasets (URA once token rules allow). Do not resubmit the LTA
 signup (owner decision, 2026-11-20); a key arriving by email goes to the
 vault only. Push and post a short Slack report. No new spend, no workflow
 files, no quota workarounds.

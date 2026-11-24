@@ -15,6 +15,7 @@ const { SOURCES } = require('../src/sources');
 const nea4day = require('./fixtures/nea-4day-forecast.json');
 const ltaCams = require('./fixtures/lta-traffic-images.json');
 const pubFlood = require('./fixtures/pub-flood-alerts.json');
+const momLfpr = require('./fixtures/mom-lfpr-schema.json');
 const rows = require('./fixtures/hdb-rows.json');
 const filtered = require('./fixtures/hdb-filtered.json');
 const id = 'd_8b84c4ee58e3cfc0ece0d773c8ca6abc';
@@ -23,8 +24,8 @@ const args = { dataset_id:id };
 const response = (body, status=200, headers={}) => new Response(JSON.stringify(body), {status,headers});
 function fakeBucket() { return { calls:0, delays:[], async acquire(){this.calls++;}, defer(ms){this.delays.push(ms);} }; }
 
-test('two dataset tools have strict schemas',()=> {
- assert.equal(DATASET_TOOLS.length,2);
+test('three dataset tools have strict schemas',()=> {
+ assert.equal(DATASET_TOOLS.length,3);
  for(const t of DATASET_TOOLS) assert.equal(t.inputSchema.additionalProperties,false);
 });
 test('default row request is bounded and uses official host',()=> {
@@ -255,6 +256,29 @@ test('flood alerts fixture has the v2 envelope and a records list',()=> {
  assert.equal(pubFlood.code,0);assert.ok(pubFlood.data&&Array.isArray(pubFlood.data.records));
 });
 
+// --- Iteration 7: curated featured-datasets registry ---
+
+test('featured datasets are well-formed, unique and verified',()=> {
+ const {FEATURED_DATASETS}=require('../src/datasets');
+ assert.ok(FEATURED_DATASETS.length>=4);
+ const seen=new Set();
+ for(const f of FEATURED_DATASETS){
+  assert.ok(/^d_[0-9a-f]{32}$/.test(f.dataset_id),f.dataset_id);
+  assert.ok(f.title&&f.agency&&f.cadence&&f.verified&&f.notes);
+  assert.ok(!seen.has(f.dataset_id));seen.add(f.dataset_id);
+ }
+});
+test('featured datasets tool is registered with no required arguments',()=> {
+ const {DATASET_TOOLS}=require('../src/datasets');
+ const t=DATASET_TOOLS.find(t=>t.name==='sg_featured_datasets');
+ assert.ok(t);assert.equal(t.inputSchema.additionalProperties,false);
+ assert.deepEqual(t.inputSchema.properties,{});
+});
+test('MOM LFPR schema fixture matches its curated registry entry',()=> {
+ assert.equal(momLfpr.success,true);assert.equal(momLfpr.result.resource_id,'d_4ed91a4ac48c9cf0c2bbcf93a7067d74');
+ assert.ok(momLfpr.result.fields.some(f=>f.id==='lfpr'));assert.ok(momLfpr.result.total>0);
+});
+
 test('offline stdio handshake, discovery and invalid calls need no upstream',async()=> {
  const {spawn}=require('node:child_process');
  const child=spawn(process.execPath,[require('node:path').join(__dirname,'../src/server.js')],{stdio:['pipe','pipe','pipe']});
@@ -269,8 +293,8 @@ test('offline stdio handshake, discovery and invalid calls need no upstream',asy
   child.stdin.write(JSON.stringify({jsonrpc:'2.0',id:n,method,params})+'\n');
  });
  try{
-  const init=await rpc('initialize',{protocolVersion:'2024-11-05'});assert.equal(init.result.serverInfo.version,'0.6.0');
-  const list=await rpc('tools/list');assert.equal(list.result.tools.length,24);
+  const init=await rpc('initialize',{protocolVersion:'2024-11-05'});assert.equal(init.result.serverInfo.version,'0.7.0');
+  const list=await rpc('tools/list');assert.equal(list.result.tools.length,25);
   const bad=await rpc('tools/call',{name:'sg_dataset_rows',arguments:{dataset_id:'https://evil.invalid'}});assert.equal(bad.result.isError,true);
   const stats=await rpc('tools/call',{name:'sg_rate_limit_status'});assert.deepEqual(JSON.parse(stats.result.content[0].text).buckets,{});
  }finally{child.kill();}

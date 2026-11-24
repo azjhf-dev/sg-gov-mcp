@@ -19,7 +19,7 @@ function createClient({ fetchImpl = globalThis.fetch, getBucket = bucketFor, now
         const timer = setTimeout(() => ctrl.abort(), 15000);
         try {
           const res = await fetchImpl(url, { signal: ctrl.signal, redirect: 'error',
-            headers: { accept: 'application/json', 'user-agent': 'sg-gov-mcp/0.6.0', ...(src.headers ? src.headers() : {}) } });
+            headers: { accept: 'application/json', 'user-agent': 'sg-gov-mcp/0.7.0', ...(src.headers ? src.headers() : {}) } });
           if (res.status === 429) {
             const delay = retryDelay(res.headers.get('retry-after'), now());
             bucket.defer(delay);

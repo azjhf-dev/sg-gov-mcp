@@ -63,3 +63,12 @@ real-time API. Public data: PUB flood alerts.
 
 - `pub-flood-alerts.json`: flood alert envelope; `data.records` was empty
   (no active alerts). Record-level fields are not yet observed live.
+
+## Datastore schema fixtures (added 2026-11-24)
+
+Captured 2026-11-24 around 08:48 Asia/Singapore from the official
+data.gov.sg datastore route (limit=1). Public data: MOM labour statistics
+schema.
+
+- `mom-lfpr-schema.json`: schema of the MOM Resident Labour Force
+  Participation Rate dataset (d_4ed91a4ac48c9cf0c2bbcf93a7067d74).

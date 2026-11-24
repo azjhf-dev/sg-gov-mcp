@@ -12,11 +12,11 @@ const { allStats } = require("./ratelimit");
 const { SOURCES, listSources } = require("./sources");
 
 const { createClient } = require("./client");
-const { DATASET_TOOLS, DATASET_SOURCE, buildDatasetRequest, datasetOutput } = require("./datasets");
+const { DATASET_TOOLS, DATASET_SOURCE, FEATURED_DATASETS, buildDatasetRequest, datasetOutput } = require("./datasets");
 const { SINGSTAT_TOOLS, SINGSTAT_SOURCE, buildSingstatRequest, singstatOutput } = require("./singstat");
 const { ONEMAP_TOOLS, ONEMAP_SOURCE, buildOnemapRequest, onemapOutput } = require("./onemap");
 const client = createClient();
-const VERSION = "0.6.0";
+const VERSION = "0.7.0";
 const MAX_BODY_CHARS = 12000;
 
 
@@ -94,6 +94,9 @@ async function callTool(name, args) {
     return JSON.stringify(out, null, 2);
   }
 
+  if (name === "sg_featured_datasets") {
+    return JSON.stringify({ datasets: FEATURED_DATASETS, note: 'Curated and individually verified; no network call made. The catalogue API returns 403, so this registry is the discovery path.' }, null, 2);
+  }
   if (DATASET_TOOLS.some(t => t.name === name)) {
     const request = buildDatasetRequest(name, args);
     const { body, cached } = await client.request(request.src, request.url);

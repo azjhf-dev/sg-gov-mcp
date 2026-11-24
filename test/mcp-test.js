@@ -60,7 +60,7 @@ async function waitReply(id, timeout = 40000) {
   send({ jsonrpc: "2.0", id: 2, method: "tools/list" });
   const list = await waitReply(2);
   const tools = (list.result.tools || []).map((t) => t.name);
-  check("tools/list returns 24 tools", tools.length === 24);
+  check("tools/list returns 25 tools", tools.length === 25);
   console.log("tools:", tools.join(", "));
 
   send({ jsonrpc: "2.0", id: 3, method: "tools/call", params: { name: "sg_psi", arguments: {} } });
@@ -113,6 +113,14 @@ async function waitReply(id, timeout = 40000) {
   send({ jsonrpc: "2.0", id: 17, method: "tools/call", params: { name: "sg_flood_alerts", arguments: {} } });
   const flood = await waitReply(17);
   check("sg_flood_alerts live", flood.result && !flood.result.isError && /"records"/.test(flood.result.content[0].text));
+
+  send({ jsonrpc: "2.0", id: 18, method: "tools/call", params: { name: "sg_featured_datasets", arguments: {} } });
+  const feat = await waitReply(18);
+  check("sg_featured_datasets (no upstream call)", feat.result && !feat.result.isError && (()=>{const o=JSON.parse(feat.result.content[0].text);return o.datasets.length>=4 && o.datasets.every(d=>/^d_[0-9a-f]{32}$/.test(d.dataset_id));})());
+
+  send({ jsonrpc: "2.0", id: 19, method: "tools/call", params: { name: "sg_dataset_schema", arguments: { dataset_id: "d_9392faa714d5e5809b07b10fbff2993e" } } });
+  const momSchema = await waitReply(19);
+  check("curated MOM occupation dataset schema live", momSchema.result && !momSchema.result.isError && (()=>{const o=JSON.parse(momSchema.result.content[0].text);return o.fields.some(f=>f.id==='occupation');})());
 
   if (process.env.ONEMAP_TOKEN) {
     send({ jsonrpc: "2.0", id: 13, method: "tools/call", params: { name: "sg_onemap_search", arguments: { query: "200640" } } });
