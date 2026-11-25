@@ -129,7 +129,7 @@ const SOURCES = {
     agency: "PUB via data.gov.sg",
     updates: "every 2 min",
     dateParam: true,
-    description: "Real-time flood alert events across Singapore (records list; empty when no active alerts).",
+    description: "Real-time flood alert events across Singapore (records list; empty when no active alerts). Per the official spec, each record has datetime, updatedTimestamp and item.readings[] with area/headline/description/severity/urgency/instruction.",
   },
   sg_weather_forecast_4day: {
     host: "api.data.gov.sg",

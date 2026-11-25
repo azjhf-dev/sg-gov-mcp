@@ -76,8 +76,9 @@ Done:
 - PUB flood alerts via the v2 real-time endpoint (iteration 6). See
   docs/ITERATION-6.md.
 - Curated featured-datasets registry: HDB resale prices, MOM/SingStat
-  labour series, each verified live once (iteration 7). See
-  docs/ITERATION-7.md.
+  labour series (iteration 7), SingStat CPI and NEA monthly rainfall
+  (iteration 8), each verified live once. See docs/ITERATION-7.md and
+  docs/ITERATION-8.md.
 
 Candidates, each with its own limit discovery first:
 
@@ -103,14 +104,16 @@ Candidates, each with its own limit discovery first:
 - GitHub token has repo scope only, so no GitHub Actions workflows until the
   owner adds the workflow scope. Tests run locally for now.
 
-## Iteration 8 checkpoint
+## Iteration 9 checkpoint
 
-Iterations 4-7 shipped OneMap, legacy v1 additions, PUB flood alerts and a
-curated featured-datasets registry (HDB resale, MOM/SingStat labour series).
-Next: OneMap population/themes after a response-size review (needs a fresh
-getToken run with another owner-approved one-time credential copy),
-flood-alerts record shape from the API spec or a future active alert, or
-more curated datasets (URA once token rules allow). Do not resubmit the LTA
-signup (owner decision, 2026-11-20); a key arriving by email goes to the
-vault only. Push and post a short Slack report. No new spend, no workflow
-files, no quota workarounds.
+Iterations 4-8 shipped OneMap, legacy v1 additions, PUB flood alerts, a
+curated featured-datasets registry (now 6 entries: HDB resale, MOM/SingStat
+labour, CPI, NEA monthly rainfall) and the flood-alerts record shape from
+the official spec. Next: more curated datasets (URA once token rules allow),
+confirming the flood-alerts record shape against a live alert when one
+occurs, or OneMap population/themes after a response-size review once an
+owner-approved one-time credential copy exists (parent decision 2026-11-24:
+not now; ask via parent when chosen). Do not resubmit the LTA signup (owner
+decision, 2026-11-20); a key arriving by email goes to the vault only. Push
+and post a short Slack report. No new spend, no workflow files, no quota
+workarounds.

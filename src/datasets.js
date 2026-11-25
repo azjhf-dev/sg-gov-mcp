@@ -20,7 +20,9 @@ const FEATURED_DATASETS = [
   { dataset_id: 'd_8b84c4ee58e3cfc0ece0d773c8ca6abc', title: 'Resale Flat Prices', agency: 'HDB', cadence: 'monthly', verified: '2026-11-20', notes: 'Resale transactions by month, town, flat type; large table, always use filters/fields/sort.' },
   { dataset_id: 'd_4ed91a4ac48c9cf0c2bbcf93a7067d74', title: 'Resident Labour Force Participation Rate by Age and Sex', agency: 'MOM', cadence: 'annual', verified: '2026-11-24', notes: 'Columns: year, sex, age, lfpr. 768 rows at verification.' },
   { dataset_id: 'd_f8940ce770d7506567a7579712eedff2', title: 'Labour Force Aged 15 Years And Over, End June, Annual', agency: 'SingStat', cadence: 'annual', verified: '2026-11-24', notes: 'Wide table: DataSeries plus one column per year; use fields to project.' },
-  { dataset_id: 'd_9392faa714d5e5809b07b10fbff2993e', title: 'Employed Residents Aged 15 Years & Over by Occupation, Age And Sex', agency: 'MOM', cadence: 'annual', verified: '2026-11-24', notes: 'Columns: year, sex, occupation, age, employed. 3456 rows at verification.' }
+  { dataset_id: 'd_9392faa714d5e5809b07b10fbff2993e', title: 'Employed Residents Aged 15 Years & Over by Occupation, Age And Sex', agency: 'MOM', cadence: 'annual', verified: '2026-11-24', notes: 'Columns: year, sex, occupation, age, employed. 3456 rows at verification.' },
+  { dataset_id: 'd_bdaff844e3ef89d39fceb962ff8f0791', title: 'Consumer Price Index (CPI), 2024 As Base Year, Monthly', agency: 'SingStat', cadence: 'monthly', verified: '2026-11-25', notes: 'Wide table: DataSeries plus one column per month (e.g. 2026Oct); use fields to project. 207 rows at verification.' },
+  { dataset_id: 'd_b16d06b83473fdfcc92ed9d37b66ba58', title: 'Rainfall - Monthly Total', agency: 'NEA', cadence: 'monthly', verified: '2026-11-25', notes: 'Columns: month, total_rainfall. 538 rows at verification.' }
 ];
 const DATASET_SOURCE = {
   host:'data.gov.sg', quotaGroup:'data.gov.sg:datastore', bucket:{capacity:3,windowMs:10000}, ttlMs:300000,

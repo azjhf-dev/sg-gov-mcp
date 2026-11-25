@@ -16,6 +16,7 @@ const nea4day = require('./fixtures/nea-4day-forecast.json');
 const ltaCams = require('./fixtures/lta-traffic-images.json');
 const pubFlood = require('./fixtures/pub-flood-alerts.json');
 const momLfpr = require('./fixtures/mom-lfpr-schema.json');
+const pubFloodSpec = require('./fixtures/pub-flood-alerts-openapi.json');
 const rows = require('./fixtures/hdb-rows.json');
 const filtered = require('./fixtures/hdb-filtered.json');
 const id = 'd_8b84c4ee58e3cfc0ece0d773c8ca6abc';
@@ -260,7 +261,7 @@ test('flood alerts fixture has the v2 envelope and a records list',()=> {
 
 test('featured datasets are well-formed, unique and verified',()=> {
  const {FEATURED_DATASETS}=require('../src/datasets');
- assert.ok(FEATURED_DATASETS.length>=4);
+ assert.ok(FEATURED_DATASETS.length>=6);
  const seen=new Set();
  for(const f of FEATURED_DATASETS){
   assert.ok(/^d_[0-9a-f]{32}$/.test(f.dataset_id),f.dataset_id);
@@ -279,6 +280,20 @@ test('MOM LFPR schema fixture matches its curated registry entry',()=> {
  assert.ok(momLfpr.result.fields.some(f=>f.id==='lfpr'));assert.ok(momLfpr.result.total>0);
 });
 
+// --- Iteration 8: flood-alerts record shape from the official OpenAPI spec ---
+
+test('flood alerts spec fixture documents the record shape',()=> {
+ const get=pubFloodSpec.paths['/real-time/api/weather/flood-alerts'].get;
+ const data=get.responses['200'].content['application/json'].schema.properties.data.properties;
+ assert.ok(data.records&&data.records.items);
+ const reading=data.records.items.properties.item.properties.readings.items.properties;
+ for(const f of ['area','headline','description','severity','urgency','instruction','event','eventCode']) assert.ok(reading[f],f);
+});
+test('sg_flood_alerts source description carries the documented record fields',()=> {
+ const s=SOURCES.sg_flood_alerts;
+ assert.ok(/headline/.test(s.description)&&/severity/.test(s.description));
+});
+
 test('offline stdio handshake, discovery and invalid calls need no upstream',async()=> {
  const {spawn}=require('node:child_process');
  const child=spawn(process.execPath,[require('node:path').join(__dirname,'../src/server.js')],{stdio:['pipe','pipe','pipe']});
@@ -293,7 +308,7 @@ test('offline stdio handshake, discovery and invalid calls need no upstream',asy
   child.stdin.write(JSON.stringify({jsonrpc:'2.0',id:n,method,params})+'\n');
  });
  try{
-  const init=await rpc('initialize',{protocolVersion:'2024-11-05'});assert.equal(init.result.serverInfo.version,'0.7.0');
+  const init=await rpc('initialize',{protocolVersion:'2024-11-05'});assert.equal(init.result.serverInfo.version,'0.8.0');
   const list=await rpc('tools/list');assert.equal(list.result.tools.length,25);
   const bad=await rpc('tools/call',{name:'sg_dataset_rows',arguments:{dataset_id:'https://evil.invalid'}});assert.equal(bad.result.isError,true);
   const stats=await rpc('tools/call',{name:'sg_rate_limit_status'});assert.deepEqual(JSON.parse(stats.result.content[0].text).buckets,{});

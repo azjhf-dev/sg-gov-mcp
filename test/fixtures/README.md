@@ -72,3 +72,10 @@ schema.
 
 - `mom-lfpr-schema.json`: schema of the MOM Resident Labour Force
   Participation Rate dataset (d_4ed91a4ac48c9cf0c2bbcf93a7067d74).
+
+## API spec fixtures (added 2026-11-25)
+
+- `pub-flood-alerts-openapi.json`: the official OpenAPI spec for
+  /v2/real-time/api/weather/flood-alerts, extracted from the PUB dataset
+  page's own embedded data on 2026-11-25 (no alternate host). Documents the
+  CAP-style record shape; public documentation content.
