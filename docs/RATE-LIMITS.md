@@ -55,7 +55,10 @@ images.data.gov.sg).
 minutes per the dataset page. Response envelope is `data.records` (not
 `items`) plus a `paginationToken`. Verified with one request: 200, `code: 0`,
 empty records list (no active alerts at check time). Uses the same v2 keyless
-bucket (measured 6/10s; client cap 5/10s) with a 2-minute cache. Record shape
+bucket (measured 6/10s; client cap 5/10s) with a 2-minute cache. Correction
+(2026-11-26): `data.records` is a rolling series of ~2-minute observation
+windows (25 seen with no active flood); `item.readings` populates only during
+an active alert. Record shape
 documented from the official OpenAPI spec (2026-11-25): each record carries
 `datetime`, `updatedTimestamp` and `item` (CAP envelope) with `readings[]`
 (area/headline/description/severity/urgency/instruction; area circle radius

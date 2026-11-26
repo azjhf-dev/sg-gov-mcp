@@ -79,3 +79,6 @@ schema.
   /v2/real-time/api/weather/flood-alerts, extracted from the PUB dataset
   page's own embedded data on 2026-11-25 (no alternate host). Documents the
   CAP-style record shape; public documentation content.
+- `pub-flood-alerts-active.json`: live capture from 2026-11-26 ~09:00 SGT.
+  25 rolling ~2-minute observation windows, all with empty readings (no
+  active flood). Shows that records are observation windows, not alerts.

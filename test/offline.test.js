@@ -17,6 +17,7 @@ const ltaCams = require('./fixtures/lta-traffic-images.json');
 const pubFlood = require('./fixtures/pub-flood-alerts.json');
 const momLfpr = require('./fixtures/mom-lfpr-schema.json');
 const pubFloodSpec = require('./fixtures/pub-flood-alerts-openapi.json');
+const pubFloodActive = require('./fixtures/pub-flood-alerts-active.json');
 const rows = require('./fixtures/hdb-rows.json');
 const filtered = require('./fixtures/hdb-filtered.json');
 const id = 'd_8b84c4ee58e3cfc0ece0d773c8ca6abc';
@@ -261,7 +262,7 @@ test('flood alerts fixture has the v2 envelope and a records list',()=> {
 
 test('featured datasets are well-formed, unique and verified',()=> {
  const {FEATURED_DATASETS}=require('../src/datasets');
- assert.ok(FEATURED_DATASETS.length>=6);
+ assert.ok(FEATURED_DATASETS.length>=7);
  const seen=new Set();
  for(const f of FEATURED_DATASETS){
   assert.ok(/^d_[0-9a-f]{32}$/.test(f.dataset_id),f.dataset_id);
@@ -294,6 +295,20 @@ test('sg_flood_alerts source description carries the documented record fields',(
  assert.ok(/headline/.test(s.description)&&/severity/.test(s.description));
 });
 
+// --- Iteration 9: live observation-window finding for flood alerts ---
+
+test('flood alerts live fixture shows rolling observation windows',()=> {
+ const recs=pubFloodActive.data.records;assert.ok(recs.length>0);
+ for(const r of recs){
+  assert.ok(/^\d{4}-\d{2}-\d{2}T/.test(r.datetime)&&r.updatedTimestamp);
+  assert.equal(r.item.type,'observation');assert.ok(Array.isArray(r.item.readings));
+ }
+});
+test('sg_flood_alerts description states readings fill only during alerts',()=> {
+ const s=SOURCES.sg_flood_alerts;
+ assert.ok(/observation windows/.test(s.description)&&/only during an active/.test(s.description));
+});
+
 test('offline stdio handshake, discovery and invalid calls need no upstream',async()=> {
  const {spawn}=require('node:child_process');
  const child=spawn(process.execPath,[require('node:path').join(__dirname,'../src/server.js')],{stdio:['pipe','pipe','pipe']});
@@ -308,7 +323,7 @@ test('offline stdio handshake, discovery and invalid calls need no upstream',asy
   child.stdin.write(JSON.stringify({jsonrpc:'2.0',id:n,method,params})+'\n');
  });
  try{
-  const init=await rpc('initialize',{protocolVersion:'2024-11-05'});assert.equal(init.result.serverInfo.version,'0.8.0');
+  const init=await rpc('initialize',{protocolVersion:'2024-11-05'});assert.equal(init.result.serverInfo.version,'0.9.0');
   const list=await rpc('tools/list');assert.equal(list.result.tools.length,25);
   const bad=await rpc('tools/call',{name:'sg_dataset_rows',arguments:{dataset_id:'https://evil.invalid'}});assert.equal(bad.result.isError,true);
   const stats=await rpc('tools/call',{name:'sg_rate_limit_status'});assert.deepEqual(JSON.parse(stats.result.content[0].text).buckets,{});
