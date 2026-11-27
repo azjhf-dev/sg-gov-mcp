@@ -262,7 +262,7 @@ test('flood alerts fixture has the v2 envelope and a records list',()=> {
 
 test('featured datasets are well-formed, unique and verified',()=> {
  const {FEATURED_DATASETS}=require('../src/datasets');
- assert.ok(FEATURED_DATASETS.length>=7);
+ assert.ok(FEATURED_DATASETS.length>=9);
  const seen=new Set();
  for(const f of FEATURED_DATASETS){
   assert.ok(/^d_[0-9a-f]{32}$/.test(f.dataset_id),f.dataset_id);
@@ -323,7 +323,7 @@ test('offline stdio handshake, discovery and invalid calls need no upstream',asy
   child.stdin.write(JSON.stringify({jsonrpc:'2.0',id:n,method,params})+'\n');
  });
  try{
-  const init=await rpc('initialize',{protocolVersion:'2024-11-05'});assert.equal(init.result.serverInfo.version,'0.9.0');
+  const init=await rpc('initialize',{protocolVersion:'2024-11-05'});assert.equal(init.result.serverInfo.version,'0.10.0');
   const list=await rpc('tools/list');assert.equal(list.result.tools.length,25);
   const bad=await rpc('tools/call',{name:'sg_dataset_rows',arguments:{dataset_id:'https://evil.invalid'}});assert.equal(bad.result.isError,true);
   const stats=await rpc('tools/call',{name:'sg_rate_limit_status'});assert.deepEqual(JSON.parse(stats.result.content[0].text).buckets,{});

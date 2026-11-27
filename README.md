@@ -3,7 +3,7 @@
 A dependency-free Node MCP stdio server for Singapore government open data.
 One interface across agencies. No API keys are needed for the implemented tools.
 
-## Status: iteration 9 (2026-11-26)
+## Status: iteration 10 (2026-11-27)
 
 25 tools: 15 real-time feeds (v2 + legacy v1), 3 general tabular dataset
 tools (rows, schema, curated featured-datasets registry), 3 SingStat
@@ -20,7 +20,7 @@ The server is a prototype, not a hosted or production-hardened service.
 - Cache bounded at 256 entries. Concurrent identical fetches share one request.
 - Auth tokens come from environment variables, never files, logs or commits.
 - No boundary probing, quota bypasses, proxy rotation or automatic page crawling.
-- 62 offline tests and 18 live MCP smoke checks pass on 2026-11-26.
+- 62 offline tests and 18 live MCP smoke checks pass on 2026-11-27.
 
 ## Run and test
 
@@ -155,4 +155,4 @@ Evidence and next stages: [RATE-LIMITS.md](docs/RATE-LIMITS.md),
 [ITERATION-2.md](docs/ITERATION-2.md), [ITERATION-3.md](docs/ITERATION-3.md),
 [ITERATION-4.md](docs/ITERATION-4.md), [ITERATION-5.md](docs/ITERATION-5.md),
 [ITERATION-8.md](docs/ITERATION-8.md), [ITERATION-9.md](docs/ITERATION-9.md),
-[PLAN.md](docs/PLAN.md).
+[ITERATION-10.md](docs/ITERATION-10.md), [PLAN.md](docs/PLAN.md).

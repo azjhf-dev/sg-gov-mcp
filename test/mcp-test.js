@@ -116,7 +116,7 @@ async function waitReply(id, timeout = 40000) {
 
   send({ jsonrpc: "2.0", id: 18, method: "tools/call", params: { name: "sg_featured_datasets", arguments: {} } });
   const feat = await waitReply(18);
-  check("sg_featured_datasets (no upstream call)", feat.result && !feat.result.isError && (()=>{const o=JSON.parse(feat.result.content[0].text);return o.datasets.length>=7 && o.datasets.every(d=>/^d_[0-9a-f]{32}$/.test(d.dataset_id));})());
+  check("sg_featured_datasets (no upstream call)", feat.result && !feat.result.isError && (()=>{const o=JSON.parse(feat.result.content[0].text);return o.datasets.length>=9 && o.datasets.every(d=>/^d_[0-9a-f]{32}$/.test(d.dataset_id));})());
 
   send({ jsonrpc: "2.0", id: 19, method: "tools/call", params: { name: "sg_dataset_schema", arguments: { dataset_id: "d_9392faa714d5e5809b07b10fbff2993e" } } });
   const momSchema = await waitReply(19);
