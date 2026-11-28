@@ -78,8 +78,9 @@ Done:
 - Curated featured-datasets registry: HDB resale prices, MOM/SingStat
   labour series (iteration 7), SingStat CPI and NEA monthly rainfall
   (iteration 8), LTA annual motor vehicle population (iteration 9), HDB
-  resale price index and MOE schools (iteration 10), each verified live
-  once. See docs/ITERATION-7.md to docs/ITERATION-10.md.
+  resale price index and MOE schools (iteration 10), LTA COE results and
+  HDB carparks (iteration 11), each verified live once. See
+  docs/ITERATION-7.md to docs/ITERATION-11.md.
 
 Candidates, each with its own limit discovery first:
 
@@ -105,15 +106,15 @@ Candidates, each with its own limit discovery first:
 - GitHub token has repo scope only, so no GitHub Actions workflows until the
   owner adds the workflow scope. Tests run locally for now.
 
-## Iteration 11 checkpoint
+## Iteration 12 checkpoint
 
-Iterations 4-10 shipped OneMap, legacy v1 additions, PUB flood alerts (with
+Iterations 4-11 shipped OneMap, legacy v1 additions, PUB flood alerts (with
 the observation-window semantics correction) and a curated
-featured-datasets registry now at 9 entries (HDB resale, MOM/SingStat
-labour, CPI, NEA rainfall, LTA vehicles, HDB resale price index, MOE
-schools). Next: more curated datasets (URA once token rules allow),
-confirming populated flood-alerts readings during an actual alert, or
-OneMap population/themes once an owner-approved one-time credential copy
+featured-datasets registry now at 11 entries (HDB resale, MOM/SingStat
+labour, CPI, NEA rainfall, LTA vehicles, HDB RPI, MOE schools, LTA COE
+results, HDB carparks). Next: more curated datasets (URA once token rules
+allow), confirming populated flood-alerts readings during an actual alert,
+or OneMap population/themes once an owner-approved one-time credential copy
 exists (parent decision 2026-11-24: not now; ask via parent when chosen).
 Do not resubmit the LTA signup (owner decision, 2026-11-20); a key arriving
 by email goes to the vault only. Push and post a short Slack report. No new

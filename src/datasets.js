@@ -25,7 +25,9 @@ const FEATURED_DATASETS = [
   { dataset_id: 'd_b16d06b83473fdfcc92ed9d37b66ba58', title: 'Rainfall - Monthly Total', agency: 'NEA', cadence: 'monthly', verified: '2026-11-25', notes: 'Columns: month, total_rainfall. 538 rows at verification.' },
   { dataset_id: 'd_2873f3b1b2a836103f51f696350b98fa', title: 'Annual Motor Vehicle Population by Vehicle Type', agency: 'LTA', cadence: 'annual', verified: '2026-11-26', notes: 'Columns: year, category, type, number. 412 rows at verification. Keyless on data.gov.sg; no DataMall key needed.' },
   { dataset_id: 'd_14f63e595975691e7c24a27ae4c07c79', title: 'HDB Resale Price Index (1Q2009 = 100), Quarterly', agency: 'HDB', cadence: 'quarterly', verified: '2026-11-27', notes: 'Columns: quarter, index. 147 rows at verification.' },
-  { dataset_id: 'd_688b934f82c1059ed0a6993d2a829089', title: 'General information of schools', agency: 'MOE', cadence: 'periodic', verified: '2026-11-27', notes: 'School directory: name, address, postal code, phone, email, nearest MRT and more. 337 rows at verification.' }
+  { dataset_id: 'd_688b934f82c1059ed0a6993d2a829089', title: 'General information of schools', agency: 'MOE', cadence: 'periodic', verified: '2026-11-27', notes: 'School directory: name, address, postal code, phone, email, nearest MRT and more. 337 rows at verification.' },
+  { dataset_id: 'd_69b3380ad7e51aff3a7dcc84eba52b8a', title: 'COE Bidding Results / Prices', agency: 'LTA', cadence: 'twice monthly', verified: '2026-11-28', notes: 'Columns: month, bidding_no, vehicle_class, quota, bids_success, bids_received, premium. 2000 rows at verification. Keyless; no DataMall key needed.' },
+  { dataset_id: 'd_23f946fa557947f93a8043bbef41dd09', title: 'HDB Carpark Information', agency: 'HDB', cadence: 'periodic', verified: '2026-11-28', notes: 'Static carpark directory: car_park_no, address, coords, type, parking system, free/night parking, decks. 2273 rows at verification.' }
 ];
 const DATASET_SOURCE = {
   host:'data.gov.sg', quotaGroup:'data.gov.sg:datastore', bucket:{capacity:3,windowMs:10000}, ttlMs:300000,
